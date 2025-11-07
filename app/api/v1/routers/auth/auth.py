@@ -31,6 +31,7 @@ def login_user_by_email(request: LoginRequestByEmail):
         "refresh_token": response.session.refresh_token,
         "user": response.user
     }
+
 @router.post("/refresh-by-email")
 def refresh_access_token_by_email(request: RefreshTokenRequest):
     try:
