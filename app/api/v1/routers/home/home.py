@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from .home_helper import GetTrackRequest
 from app.db.supabase_py import supabase_py
 
-router = APIRouter(prefix="/home", tags=["Home"])
+router = APIRouter(prefix="/api/v1/home", tags=["Home"])
 
 @router.get("/get-all-tracks")
 def get_all_tracks():
@@ -15,8 +15,8 @@ def get_all_tracks():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@router.get("/get-track")
-def get_track(request: GetTrackRequest):
+@router.get("/get-tracks")
+def get_tracks(request: GetTrackRequest):
     try:
         result = supabase_py.table("Tracks").select("*").like("track_title", GetTrackRequest.name).execute()
         if not result.data:

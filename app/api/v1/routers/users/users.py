@@ -11,7 +11,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
-router = APIRouter(prefix="/user", tags=["User"])
+router = APIRouter(prefix="/api/v1/user", tags=["User"])
 
 def get_current_user(request: Request):
     auth_header = request.headers.get("Authorization")

@@ -5,7 +5,7 @@ from .auth_helper import RefreshTokenRequest,ForgotPasswordRequestByEmail
 from .auth_helper import ResetPasswordRequest, ChangePasswordRequestByEmail
 from app.db.supabase_py import supabase_py
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
 
 # use email
 @router.post("/register-by-email")
@@ -32,8 +32,8 @@ def login_user_by_email(request: LoginRequestByEmail):
         "user": response.user
     }
 
-@router.post("/refresh-by-email")
-def refresh_access_token_by_email(request: RefreshTokenRequest):
+@router.post("/refresh-access-token")
+def refresh_access_token(request: RefreshTokenRequest):
     try:
         response = supabase_py.auth.refresh_session(request.refresh_token)
 
@@ -58,7 +58,7 @@ def forgot_password_by_email(request: ForgotPasswordRequestByEmail):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/reset-password")
-def reset_password_by_email(request: ResetPasswordRequest):
+def reset_password(request: ResetPasswordRequest):
     try:
         supabase_py.auth.update_user(
             {

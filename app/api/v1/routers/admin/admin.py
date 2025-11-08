@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from app.db.supabase_py import supabase_py
 from .admin_helper import LoginRequest
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
 
 # ============== login =================#
 # use email
