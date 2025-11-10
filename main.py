@@ -7,7 +7,7 @@ from app.api.v1.routers.admin import admin
 # email = "viaicamon28@gmail.com"
 # password = "utc@123"
 
-apptest = FastAPI()
-apptest.include_router(auth.router, tags = ["Auth"])
+app = FastAPI()
+app.include_router(auth.router, tags = ["Auth"])
 # apptest.include_router(home.router, tags=["Home"])
 # apptest.include_router(admin.router, tags=["Admin"])
