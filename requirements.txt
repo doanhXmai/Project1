@@ -3,3 +3,4 @@ python-dotenv
 SQLAlchemy
 fastapi
 pydantic
+pydantic[email]
