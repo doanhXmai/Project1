@@ -7,6 +7,8 @@ class ResetPasswordRequest(BaseModel):
     access_token: str
     password: str
 
+class LogoutRequest(BaseModel):
+    refresh_token: str
 # use email
 class LoginRequestByEmail(BaseModel):
     email: EmailStr

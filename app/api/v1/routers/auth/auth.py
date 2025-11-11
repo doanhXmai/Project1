@@ -1,6 +1,8 @@
+from linecache import cache
+
 from fastapi import APIRouter , HTTPException
 
-from .auth_helper import RegisterRequestByEmail, LoginRequestByEmail
+from .auth_helper import RegisterRequestByEmail, LoginRequestByEmail, LogoutRequest
 from .auth_helper import RefreshTokenRequest,ForgotPasswordRequestByEmail
 from .auth_helper import ResetPasswordRequest, ChangePasswordRequestByEmail
 from app.db.supabase_py import supabase_py
@@ -89,3 +91,11 @@ def change_password_by_email(request: ChangePasswordRequestByEmail):
         return {"message": "Password changed successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/logout")
+def logout_user(request: LogoutRequest):
+    try:
+        response = supabase_py.auth.sign_out(request.refresh_token)
+        return {"message": "Logged out successfully"}
+    except Exception as e:
+        raise HTTPException(status_code = 400, detail = str(e))
