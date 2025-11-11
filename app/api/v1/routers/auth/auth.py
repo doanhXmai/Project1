@@ -95,7 +95,7 @@ def change_password_by_email(request: ChangePasswordRequestByEmail):
 @router.post("/logout")
 def logout_user(request: LogoutRequest):
     try:
-        response = supabase_py.auth.sign_out({"refresh_token", request.refresh_token})
+        response = supabase_py.auth.sign_out({"refresh_token": request.refresh_token})
         return {"message": "Logged out successfully"}
     except Exception as e:
         raise HTTPException(status_code = 400, detail = str(e))
