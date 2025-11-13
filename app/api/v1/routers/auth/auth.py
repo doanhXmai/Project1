@@ -29,8 +29,8 @@ def login_user_by_email(request: LoginRequestByEmail):
         raise HTTPException(status_code=400, detail="Invalid email or password")
     return {
         "access_token": response.session.access_token,
-        "refresh_token": response.session.refresh_token,
-        "user": response.user
+        "refresh_token": response.session.refresh_token
+        # "user": response.user
     }
 
 @router.post("/refresh-access-token")
@@ -90,11 +90,3 @@ def change_password_by_email(request: ChangePasswordRequestByEmail):
         return {"message": "Password changed successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/logout")
-def logout_user(request: LogoutRequest):
-    try:
-        response = supabase_py.auth.sign_out({"refresh_token": request.refresh_token})
-        return {"message": "Logged out successfully"}
-    except Exception as e:
-        raise HTTPException(status_code = 400, detail = str(e))

@@ -9,5 +9,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 supabase_py:Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+
+
 # data = supabase.table('Users').select('*').execute()
 # print(data)

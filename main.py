@@ -4,9 +4,11 @@ import uvicorn
 from fastapi import HTTPException
 from fastapi import FastAPI
 
+from app.api.v1.routers.users import users
 from app.api.v1.routers.auth import auth
 app = FastAPI()
 app.include_router(auth.router, tags = ["Auth"])
+app.include_router(users.router, tags = ["User"])
 
 @app.get("/")
 def not_found():
