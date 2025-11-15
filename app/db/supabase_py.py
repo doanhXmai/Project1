@@ -6,10 +6,11 @@ load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE")
 
 supabase_py:Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
+supabase_py_service_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE)
 
 # data = supabase.table('Users').select('*').execute()
 # print(data)
