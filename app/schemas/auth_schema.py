@@ -38,7 +38,6 @@ class RegisterRequestByPhone(BaseModel):
 class ForgotPasswordRequestByPhone(BaseModel):
     phone: str
 
-
 class ChangePasswordRequestByPhone(BaseModel):
     phone: EmailStr
     old_password: str

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Form, UploadFile, File, Depends, HTTPException
 
 from app.core.config import Settings
-from app.core.supabase import supabase_py_service_client
+from app.core.supabase import supabase_py_service_client, supabase_py
 from app.schemas.genre_schema import id_to_genre_schema, GenreResponseSchema, GenreCreateSchema
-from app.schemas.singer_schema import id_to_singer_schema, SingerCreateScheme, SingerResponseSchema
+from app.schemas.home_schema import GetTrackRequest
+from app.schemas.singer_schema import id_to_singer_schema, SingerCreateSchema, SingerResponseSchema
 from app.schemas.track_schema import TrackResponseSchema, TrackCreateSchema
 from app.services.genre_service import get_or_create_genre
 from app.services.official_album_service import get_official_album
@@ -14,6 +15,26 @@ from app.utils.storage_utils import upload_to_storage
 settings = Settings()
 
 router = APIRouter(prefix = f"{settings.API_VERSION}/track", tags = ["Track"])
+
+@router.get("/get-all-tracks")
+def get_all_tracks():
+    try:
+        all_tracks = supabase_py.table("Tracks").select("*").execute()
+        if not all_tracks.data:
+            return {"status": "success", "message": "The Data is not available!"}
+        return {"status": "success", "data": all_tracks.data}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@router.get("/get-tracks")
+def get_tracks(request: GetTrackRequest):
+    try:
+        result = supabase_py.table("Tracks").select("*").like("track_title", request.name).execute()
+        if not result.data:
+            return {"status": "success", "message": "Track not found!"}
+        return {"status": "success", "message": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/add-track", response_model=TrackResponseSchema)
 async def add_track(data: str = Form(...),
@@ -57,7 +78,7 @@ async def add_track(data: str = Form(...),
 
         singer_items = []
         for s in track_data.singers:
-            singer_response: SingerResponseSchema = get_or_create_singer(SingerCreateScheme(name=s))
+            singer_response: SingerResponseSchema = get_or_create_singer(SingerCreateSchema(name=s))
             singer_id = singer_response.id
             supabase_py_service_client.table("Track_Singer").insert({
                 "track_id": track_id,

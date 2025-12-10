@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from app.core.config import Settings
 from app.core.supabase import supabase_py
 from app.schemas.genre_schema import GenreCreateSchema, GenreRequest
 from app.services.genre_service import get_or_create_genre
+from app.services.user_service import get_current_user
 
 settings = Settings()
 
@@ -21,9 +22,11 @@ def get_all_genres():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/add-genre")
-def add_genre(request: GenreRequest):
+def add_genre(request: GenreRequest, user = Depends(get_current_user)):
     try:
-        get_or_create_genre(genre_in = GenreCreateSchema(genre_name = request.name, genre_info = request.info))
+        user_id = user["id"]
+
+        get_or_create_genre(genre_in = GenreCreateSchema(genre_name = request.name, genre_info = request.info), user_id=user_id)
         return {"message": "Add genre successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

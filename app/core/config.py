@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from functools import lru_cache
 
 from pydantic.v1 import BaseSettings
@@ -20,6 +21,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str | None = None
     ALGORITHM: str | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    DATE_NOW: datetime = datetime.now(timezone.utc).isoformat()
 
     class Config:
         env_file = ".env"

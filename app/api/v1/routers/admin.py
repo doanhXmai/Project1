@@ -45,7 +45,7 @@ def login(request: LoginRequest):
 def get_admin_info(admin=Depends(get_current_admin)):
     return admin
 
-# ============== get - info =================#
+# ============== create account admin =================#
 @router.post("/create-admin", response_model=DefaultSuccessful)
 async def create_account_admin(account_info: AdminCreateSchema, admin=Depends(get_current_admin)):
     try:

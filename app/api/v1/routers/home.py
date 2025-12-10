@@ -21,7 +21,7 @@ def get_all_tracks():
 @router.get("/get-tracks")
 def get_tracks(request: GetTrackRequest):
     try:
-        result = supabase_py.table("Tracks").select("*").like("track_title", GetTrackRequest.name).execute()
+        result = supabase_py.table("Tracks").select("*").like("track_title", request.name).execute()
         if not result.data:
             return {"status": "success", "message": "Track not found!"}
         return {"status": "success", "message": result.data}

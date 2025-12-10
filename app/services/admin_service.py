@@ -4,7 +4,7 @@ from fastapi import HTTPException, Header
 
 from uuid import UUID
 
-from app.core.supabase import supabase_py, supabase_py_service_client
+from app.core.supabase import supabase_py, supabase_py_service_client, settings
 from app.enums.enums import AdminRoleEnum
 from app.schemas.admin_schema import AdminResponseSchema, AdminCreateSchema
 from app.utils.auth_utils import verify_access_token
@@ -49,7 +49,7 @@ async def create_account(account_info: AdminCreateSchema):
             "admin_password": hash_password(account_info.admin_password),
             "admin_role": account_info.admin_role,
             "admin_display_name": account_info.admin_display_name,
-            "admin_create_date": datetime.now(timezone.utc).isoformat(),
+            "admin_create_date": settings.DATE_NOW,
             "admin_status": True
         }).execute()
         return True, "Create admin successfully"

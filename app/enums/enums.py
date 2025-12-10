@@ -3,8 +3,7 @@ from enum import Enum
 """
 super_admin: toàn quyền - có thể tạo các tài khoản admin khác
 admin:
-    (+) quản lý người dùng, nghệ sĩ, bài hát, album
-    (+) quản lý thể loại
+    (+) quản lý người dùng
     (+) có thể tạo các tài khoản admin có quyền thấp hơn (admin)
     (+) quản lý user/admin(trừ super và admin cùng cấp)
 content_manager:

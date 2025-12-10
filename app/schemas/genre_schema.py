@@ -6,7 +6,7 @@ from app.core.supabase import supabase_py
 
 class GenreRequest(BaseModel):
     name: str
-    info: str = None
+    info: Optional[str] = None
 
 class GenreCreateSchema(BaseModel):
     genre_name: str

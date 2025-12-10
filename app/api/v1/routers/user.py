@@ -9,7 +9,6 @@ settings = Settings()
 
 router = APIRouter(prefix=f"{settings.API_VERSION}/user", tags=["User"])
 
-
 @router.get("/get-user-info", response_model=UserResponseSchema)
 async def get_user_info(user=Depends(get_current_user)):
     try:
@@ -42,7 +41,7 @@ async def update_user_info(display_name: str = Form(None),
             supabase_py_service_client.storage.from_("images").upload(
                 file_path, file_bytes, {"content-type": avatar.content_type}
             )
-            avatar_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/images/{file_path}"
+            avatar_url = f"{settings.SUPABASE_URL}{settings.STORAGE_PUBLIC_PATH}/images/{file_path}"
         update_data = {
             "user_display_name": display_name,
             "user_info": info
@@ -53,6 +52,6 @@ async def update_user_info(display_name: str = Form(None),
 
         res = supabase_py_service_client.table("Users").update(update_data).eq("user_id", user_id).execute()
         print(res)
-        return {"message": "Update successful"}
+        return {"message": "Update successful", "avatar_url": avatar_url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
