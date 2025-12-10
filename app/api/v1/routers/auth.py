@@ -1,7 +1,7 @@
 from fastapi import APIRouter , HTTPException, status
 
 from app.core.config import Settings
-from app.core.supabase import supabase_py
+from app.core.supabase import supabase_py, supabase_py_service_client
 from app.schemas.auth_schema import RegisterRequestByEmail
 from app.schemas.auth_schema import LoginRequestByEmail
 from app.schemas.auth_schema import RefreshTokenRequest
@@ -16,9 +16,10 @@ router = APIRouter(prefix=f"{settings.API_VERSION}/auth", tags=["Auth"])
 # use email
 @router.post("/register-by-email")
 def register_user_by_email(request: RegisterRequestByEmail):
-    check_admin = supabase_py.table("Admins").select("*").eq("admin_email", request.email).execute()
+    check_admin = supabase_py_service_client.table("Admins").select("*").eq("admin_email", request.email).execute()
     if check_admin.data:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail = "Email already exists")
+
     response = supabase_py.auth.sign_up({
         "email": request.email,
         "password": request.password

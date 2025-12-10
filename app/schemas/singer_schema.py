@@ -4,6 +4,14 @@ from pydantic import BaseModel
 
 from app.core.supabase import supabase_py
 
+class SingerRequest(BaseModel):
+    singer_name: str
+    singer_info: Optional[str] = None
+
+class SingerUpdateRequest(BaseModel):
+    singer_id: int
+    singer_name: Optional[str] = None
+    singer_info: Optional[str] = None
 
 class SingerCreateSchema(BaseModel):
     singer_name: str

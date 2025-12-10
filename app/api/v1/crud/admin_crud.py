@@ -1,6 +1,6 @@
 from pydantic import EmailStr
 
-from app.core.supabase import supabase_py
+from app.core.supabase import supabase_py, supabase_py_service_client
 from app.utils.log import ConsoleLogger as cl
 
 def admin_login(admin_name: str, admin_email: EmailStr, admin_phone: str):
@@ -20,8 +20,10 @@ def check_admin_field(field, query) -> bool:
     try:
         if query not in ["admin_id", "admin_name", "admin_email", "admin_phone"]:
             raise ValueError("Invalid field")
-        result = supabase_py.table("Admins").select("*").eq(query, field).excute()
+
+        result = supabase_py.table("Admins").select("*").eq(query, field).execute()
         return bool(result.data)
+
     except Exception as e:
         cl.error(f"Check {query} of admin error: {e}")
         return False

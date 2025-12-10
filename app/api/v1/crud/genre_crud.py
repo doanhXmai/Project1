@@ -1,23 +1,24 @@
-from app.core.supabase import supabase_py
+from app.core.supabase import supabase_py, supabase_py_service_client
 from app.schemas.genre_schema import GenreCreateSchema
 
 
-def get_genre(genre: GenreCreateSchema = None, genre_name: str = None, genre_id: int = None):
-    try:
-        if genre:
-            result = supabase_py.table("Genres").select("*").eq("genre_name", genre.genre_name).execute()
-            if result.data:
-                return result.data[0]
+def get_all():
+    return supabase_py.table("Genres").select("*").execute()
 
-        if genre_name:
-            result = supabase_py.table("Genres").select("*").eq("genre_name", genre_name).execute()
-            if result.data:
-                return result.data[0]
+def get_genre_by_name(name: str):
+    return supabase_py.table("Genres").select("*").eq("genre_name", name).execute()
 
-        result = supabase_py.table("Genres").select("*").eq("genre_id", genre_id).execute()
-        if result.data:
-            return result.data[0]
+def get_genre_by_id(genre_id: int):
+    return supabase_py.table("Genres").select("*").eq("genre_id", genre_id).execute()
 
-    except Exception as e:
-        print("get genre error: ", e)
-        return None
+def create_genre(genre: GenreCreateSchema):
+    return supabase_py_service_client.table("Genres").insert({
+        "genre_name": genre.genre_name,
+        "genre_info": genre.genre_info
+    }).execute()
+
+def update_genre(genre_id, genre: GenreCreateSchema):
+    return supabase_py_service_client.table("Genres").update({
+                 "genre_name": genre.genre_name,
+                 "genre_info": genre.genre_info
+             }).eq("genre_id", genre_id).execute()

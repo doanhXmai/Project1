@@ -1,38 +1,33 @@
-from app.core.supabase import supabase_py, supabase_py_service_client
-from app.schemas.genre_schema import GenreCreateSchema, GenreResponseSchema
+from app.api.v1.crud import genre_crud
+from app.schemas.genre_schema import GenreCreateSchema
 
-from uuid import UUID
+from app.utils.log import ConsoleLogger as cl
 
 from app.services.history_update_service import create_history
 
 
-def get_or_create_genre(user_id: UUID, genre_in: GenreCreateSchema):
+def get_or_create_genre(admin_id: int, genre_in: GenreCreateSchema):
     try:
         existing = get_genre(genre_in=genre_in)
 
         if existing:
-            return existing
+            return existing, 1
 
-        return create_genre(genre_in)
+        return create_genre(admin_id, genre_in), 2
     except Exception as e:
-        print("genre error", e)
-        return None
+        cl.error(f"get or create genre error: {e}")
+        return None, 0
 
-def get_genre(target_id, genre_in: GenreCreateSchema = None, genre_name: str = None, genre_id: int = None, is_admin: bool = False):
+def get_genre(genre_in: GenreCreateSchema = None, genre_name: str = None, genre_id: int = None):
     try:
-        query = supabase_py.table("Genres").select("*")
         if genre_in:
-            query = query.eq("genre_name", genre_in.genre_name)
+            result = genre_crud.get_genre_by_name(genre_in.genre_name)
         elif genre_name:
-            query = query.eq("genre_name", genre_name)
+            result = genre_crud.get_genre_by_name(genre_name)
         elif genre_id:
-            query = query.eq("genre_id", genre_id)
+            result = genre_crud.get_genre_by_id(genre_id)
         else:
             return None
-
-        result = query.execute()
-
-        create_history({"genre_id": result.data[0]["genre_id"]}, target_id, ["Get genre"], is_admin)
 
         return result.data[0] if result.data else None
 
@@ -40,40 +35,46 @@ def get_genre(target_id, genre_in: GenreCreateSchema = None, genre_name: str = N
         print("Get genre error: ", e)
         return None
 
-def create_genre(user_id: UUID, genre_in: GenreCreateSchema):
+def create_genre(admin_id, genre_in: GenreCreateSchema):
     try:
-        new_genre = supabase_py_service_client.table("Genres").insert({
-            "genre_name": genre_in.genre_name,
-            "genre_info": genre_in.genre_info
-        }).execute()
+        new_genre = genre_crud.create_genre(genre_in)
 
-        create_history({"genre_id": new_genre.data[0]}, user_id, ["Create genre"], False)
+        status, msg = create_history({"genre_id": new_genre.data[0]["genre_id"]}, admin_id, [f"Add a new genre-{genre_in.genre_name}"], True)
+
+        if not status:
+            cl.warn(msg)
 
         return new_genre.data[0] if new_genre.data else None
 
     except Exception as e:
-        print("Create genre error:", e)
+        cl.error("Create genre error:" + str(e))
         return None
 
-def update_genre(genre_id: int, genre_in: GenreCreateSchema):
+def update_genre(admin_id: int, genre_id: int, genre_in: GenreCreateSchema):
     try:
         if not genre_in or not genre_in:
             return None
 
-        existing = get_genre(genre_in=genre_in)
+        existing = get_genre(genre_id=genre_id)
 
         if not existing:
             return None
 
-        update_data = {
-            "genre_name": genre_in.genre_name,
-            "genre_info": genre_in.genre_info
-        }
+        if genre_in.genre_name == "":
+            genre_in.genre_name = existing["genre_name"]
 
-        update = supabase_py_service_client.table("Genres").update(update_data).eq("genre_id", genre_id).execute()
+        if genre_in.genre_info == "":
+            genre_in.genre_info = existing["genre_info"]
+
+        update = genre_crud.update_genre(genre_id = genre_id, genre = genre_in)
+
+        status, msg = create_history({"genre_id": update.data[0]["genre_id"]}, admin_id, [f"Update a genre-{genre_in.genre_name}"], True)
+
+        if not status:
+            cl.warn(msg)
 
         return update.data[0] if update.data else None
 
     except Exception as e:
-         print ("Update genre error: ", e)
+         cl.error (f"Update genre error: {e}")
          return None

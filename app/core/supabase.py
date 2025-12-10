@@ -9,6 +9,6 @@ SUPABASE_KEY = settings.SUPABASE_KEY
 SUPABASE_SERVICE_ROLE = settings.SUPABASE_SERVICE_ROLE
 
 supabase_py:Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# supabase_py_auth: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 supabase_py_service_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE)
-

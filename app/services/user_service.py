@@ -14,10 +14,12 @@ async def get_current_user(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization header format")
     access_token = authorization.split(" ")[1]
+
     headers = {
         "Authorization": f"Bearer {access_token}",
         "apikey": settings.SUPABASE_KEY
     }
+
     try:
         user_response = requests.get(f"{settings.SUPABASE_URL}/auth/v1/user", headers=headers)
 

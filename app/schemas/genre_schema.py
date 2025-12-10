@@ -5,12 +5,17 @@ from pydantic import BaseModel
 from app.core.supabase import supabase_py
 
 class GenreRequest(BaseModel):
-    name: str
-    info: Optional[str] = None
+    genre_name: str
+    genre_info: Optional[str] = None
+
+class GenreUpdateRequest(BaseModel):
+    genre_id: int
+    genre_name: Optional[str] = None
+    genre_info: Optional[str] = None
 
 class GenreCreateSchema(BaseModel):
     genre_name: str
-    genre_info: str = None
+    genre_info: Optional[str] = None
 
 class GenreResponseSchema(BaseModel):
     genre_id: int

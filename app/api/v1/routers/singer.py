@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 
+from app.api.v1.crud.singer_crud import get_all
 from app.core.config import Settings
-from app.core.supabase import supabase_py, supabase_py_service_client
-from app.schemas.singer_schema import SingerCreateSchema
-from app.services.user_service import get_current_user
+from app.schemas.singer_schema import SingerCreateSchema, SingerRequest, SingerUpdateRequest
+from app.services.admin_service import get_current_admin
+from app.services import singer_service
+from app.utils import enum_utils
 
 settings = Settings()
 
@@ -13,13 +15,54 @@ router = APIRouter(prefix=f"{settings.API_VERSION}/Singer", tags=["Singer"])
 @router.get("/get-all-singers")
 def get_all_singers():
     try:
-        result = supabase_py.table("Singers").select("*").execute()
+        result = get_all()
         if not result.data:
             raise HTTPException(status_code=404, detail="User not found in Singers")
+
         return result
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @router.post("/add-singer-user")
-# def add_singer(request: SingerCreateSchema, user=Depends(get_current_user)):
-    # try:
+@router.post("/add-singer")
+def add_singer(request: SingerRequest, admin=Depends(get_current_admin)):
+    try:
+        admin_id = admin["admin_id"]
+        admin_role = admin["admin_role"]
+
+        if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
+            raise HTTPException(status_code=403, detail="You don't have the authority to perform this action")
+
+        singer, code = singer_service.get_or_create_singer(singer_in=SingerCreateSchema(singer_name = request.singer_name, singer_info = None if request.singer_info == "" else request.singer_info, admin_id = admin_id))
+
+        if code == 2:
+            msg = "Add singer successfully"
+        elif code == 1:
+            msg = "Singer already exists"
+        else:
+            msg = "Add singer failed"
+
+        return {"message": msg}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/update-singer")
+def update_singer(request: SingerUpdateRequest, admin = Depends(get_current_admin)):
+    try:
+        admin_id = admin["admin_id"]
+        admin_role = admin["admin_role"]
+
+        if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
+            raise HTTPException(status_code=403, detail="You don't have the authority to perform this action")
+
+        update = singer_service.update_singer(admin_id=admin_id, singer_id=request.singer_id,
+                                              singer_in=SingerCreateSchema(singer_name=request.singer_name, singer_info=request.singer_info))
+
+        if update is None:
+            raise HTTPException(status_code=500, detail="Update genre failed")
+
+        return {"message": "Update successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

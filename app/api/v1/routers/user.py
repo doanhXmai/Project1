@@ -5,6 +5,8 @@ from app.core.supabase import supabase_py, supabase_py_service_client
 from app.schemas.user_schema import UserResponseSchema
 from app.services.user_service import get_current_user
 
+from app.utils.log import ConsoleLogger as cl
+
 settings = Settings()
 
 router = APIRouter(prefix=f"{settings.API_VERSION}/user", tags=["User"])
@@ -51,7 +53,9 @@ async def update_user_info(display_name: str = Form(None),
             update_data["user_avatar_url"] = avatar_url
 
         res = supabase_py_service_client.table("Users").update(update_data).eq("user_id", user_id).execute()
-        print(res)
+        cl.info(res)
+
         return {"message": "Update successful", "avatar_url": avatar_url}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

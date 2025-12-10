@@ -22,7 +22,9 @@ def create_history(list_id: dict, target_id, describe: list, is_admin: bool):
 
     try:
         records = []
-        now = settings.DATE_NOW
+
+        now = settings.DATE_NOW.isoformat()
+
         for idx, (key, value) in enumerate(list_id.items()):
             insert_data = {
                 "historyUpdate_date": now,
@@ -30,12 +32,14 @@ def create_history(list_id: dict, target_id, describe: list, is_admin: bool):
                 "historyUpdate_admin_id": target_id if is_admin else None,
                 "historyUpdate_user_id": target_id if not is_admin else None,
                 "historyUpdate_description": describe[idx],
-                key: value
+                f"historyUpdate_{key}": value
             }
             records.append(insert_data)
 
         # Insert nhiều record một lúc
         supabase_py_service_client.table("HistoryUpdate").insert(records).execute()
+
         return True, {"msg": f"Created {len(records)} records successfully"}
+
     except Exception as e:
         return False, {"msg": f"create history error: {e}"}

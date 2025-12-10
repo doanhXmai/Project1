@@ -12,7 +12,7 @@ from app.utils.enum_utils import change_role_enum
 from app.utils.password_utils import hash_password
 
 # ============== get admin from token =================#
-async def get_current_admin(authorization: str = Header(...)):
+async def  get_current_admin(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 
@@ -49,7 +49,7 @@ async def create_account(account_info: AdminCreateSchema):
             "admin_password": hash_password(account_info.admin_password),
             "admin_role": account_info.admin_role,
             "admin_display_name": account_info.admin_display_name,
-            "admin_create_date": settings.DATE_NOW,
+            "admin_create_date": settings.DATE_NOW.isoformat(),
             "admin_status": True
         }).execute()
         return True, "Create admin successfully"
