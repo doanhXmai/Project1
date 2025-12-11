@@ -37,7 +37,7 @@ def login_user_by_email(request: LoginRequestByEmail):
 
     user_id = response.user.id
 
-    user_record = supabase_py.table("Users").select("*").eq("user_id", user_id).execute()
+    user_record = supabase_py_service_client.table("Users").select("*").eq("user_id", user_id).execute()
 
     if not user_record.data:
         raise HTTPException(status_code=404, detail="User not in public.Users")
@@ -55,7 +55,7 @@ def login_user_by_email(request: LoginRequestByEmail):
 @router.post("/refresh-access-token")
 def refresh_access_token(request: RefreshTokenRequest):
     try:
-        response = supabase_py.auth.refresh_session(request.refresh_token)
+        response = supabase_py_service_client.auth.refresh_session(request.refresh_token)
 
         if response is None:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
@@ -72,7 +72,7 @@ def refresh_access_token(request: RefreshTokenRequest):
 @router.post("/forgot-password-by-email")
 def forgot_password_by_email(request: ForgotPasswordRequestByEmail):
     try:
-        supabase_py.auth.reset_password_email(request.email)
+        supabase_py_service_client.auth.reset_password_email(request.email)
         return {"message": "Password reset email sent"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -80,7 +80,7 @@ def forgot_password_by_email(request: ForgotPasswordRequestByEmail):
 @router.post("/reset-password")
 def reset_password(request: ResetPasswordRequest):
     try:
-        supabase_py.auth.update_user(
+        supabase_py_service_client.auth.update_user(
             {
                 "password": request.new_password
             },
@@ -95,14 +95,14 @@ def reset_password(request: ResetPasswordRequest):
 @router.post("/change-password-by-email")
 def change_password_by_email(request: ChangePasswordRequestByEmail):
     try:
-        login_resp = supabase_py.auth.sign_in_with_password({
+        login_resp = supabase_py_service_client.auth.sign_in_with_password({
             "email": request.email,
             "password": request.old_password
         })
         if not login_resp.user:
             raise HTTPException(status_code=401, detail="Old password is incorrect")
         access_token = login_resp.session.access_token
-        supabase_py.auth.update_user(
+        supabase_py_service_client.auth.update_user(
             { "password": request.new_password },
             { "access_token": access_token}
         )

@@ -14,11 +14,13 @@ def get_singer_by_name(singer_name: str):
 def create_singer(singer: SingerCreateSchema):
     return supabase_py_service_client.table("Singers").insert({
         "singer_name": singer.singer_name,
-        "singer_info": singer.singer_info
+        "singer_info": singer.singer_info,
+        "singer_view": 0
     }).execute()
 
 def update_singer(singer_id, singer: SingerCreateSchema):
     return supabase_py_service_client.table("Singers").update({
         "singer_name": singer.singer_name,
-        "singer_info": singer.singer_info
+        "singer_info": singer.singer_info,
+        "singer_view": singer.singer_view
     }).eq("singer_id", singer_id).execute()

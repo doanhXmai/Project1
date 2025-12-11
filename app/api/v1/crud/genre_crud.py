@@ -3,10 +3,10 @@ from app.schemas.genre_schema import GenreCreateSchema
 
 
 def get_all():
-    return supabase_py.table("Genres").select("*").execute()
+    return supabase_py_service_client.table("Genres").select("*").execute()
 
 def get_genre_by_name(name: str):
-    return supabase_py.table("Genres").select("*").eq("genre_name", name).execute()
+    return supabase_py_service_client.table("Genres").select("*").eq("genre_name", name).execute()
 
 def get_genre_by_id(genre_id: int):
     return supabase_py.table("Genres").select("*").eq("genre_id", genre_id).execute()

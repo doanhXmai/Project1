@@ -10,7 +10,9 @@ def check_user_field(field, query) -> bool:
         if query not in ["user_id", "user_name", "user_email", "user_phone"]:
             raise ValueError("Invalid field")
         result = supabase_py.table("Users").select("*").eq(query, field).excute()
+
         return bool(result.data)
+
     except Exception as e:
         cl.error(f"Check {query} of user error: {e}")
         return False

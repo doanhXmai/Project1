@@ -39,3 +39,21 @@ class AdminRoleEnum(Enum):
         return self.level > other.level
     def __ge__(self, other):
         return self.level >= other.level
+
+class UserRoleEnum(Enum):
+    USER = ("user", 1)
+    FREELANCER = ("freelancer", 2)
+
+    def __init__(self, value, level):
+        self._value_ = value
+        self.level = level
+
+    def __lt__(self, other):
+        return self.level < other.level
+    def __le__(self, other):
+        return self.level <= other.level
+
+    def __gt__(self, other):
+        return self.level > other.level
+    def __ge__(self, other):
+        return self.level >= other.level

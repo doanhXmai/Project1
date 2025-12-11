@@ -5,14 +5,14 @@ from app.api.v1.crud import singer_crud
 from app.services.history_update_service import create_history
 from app.utils.log import ConsoleLogger as cl
 
-def get_or_create_singer(admin_id: int, singer_in: SingerCreateSchema):
+def get_or_create_singer(singer_in: SingerCreateSchema, admin_id: int):
     try:
         existing = get_singer(singer_in = singer_in)
 
         if existing:
             return existing, 1
 
-        return create_singer(admin_id, singer_in), 2
+        return create_singer(singer_in = singer_in, admin_id = admin_id), 2
     except Exception as e:
         cl.error(f"Get or create singer error: {e}")
         return None
@@ -33,8 +33,11 @@ def get_singer(singer_in: SingerCreateSchema = None, singer_name: str = None, si
     except Exception as e:
         cl.error(f"Get singer error: {e}")
 
-def create_singer(admin_id, singer_in: SingerCreateSchema):
+def create_singer(singer_in: SingerCreateSchema, admin_id: int):
     try:
+        if not singer_in.singer_view:
+            singer_in.singer_view = 0
+
         new_singer = singer_crud.create_singer(singer_in)
 
         status, msg = create_history({"singer_id": new_singer.data[0]["singer_id"]}, admin_id, [f"Add a new singer-{singer_in.singer_name}"], True)
@@ -53,9 +56,13 @@ def update_singer(admin_id: int, singer_id: int, singer_in: SingerCreateSchema):
         if not singer_in or not singer_id:
             return None
 
+        if not singer_in.singer_view:
+            singer_in.singer_view = 0
+
         existing = get_singer(singer_id=singer_id)
 
         if not existing:
+            cl.warn("Crack o day")
             return None
 
         if singer_in.singer_name == "":

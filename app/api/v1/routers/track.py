@@ -9,7 +9,7 @@ from app.schemas.track_schema import TrackResponseSchema, TrackCreateSchema
 from app.services.genre_service import get_or_create_genre
 from app.services.official_album_service import get_official_album
 from app.services.singer_service import get_or_create_singer
-from app.services.user_service import get_current_user
+from app.services.admin_service import get_current_admin
 from app.utils.storage_utils import upload_to_storage
 
 settings = Settings()
@@ -36,23 +36,28 @@ def get_tracks(request: GetTrackRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get-banner")
+def get_banners():
+
+
 @router.post("/add-track", response_model=TrackResponseSchema)
 async def add_track(data: str = Form(...),
                     track_poster: UploadFile = File(None),
                     track_audio: UploadFile = File(...),
-                    user = Depends(get_current_user)
+                    track_banner: UploadFile = File(...),
+                    admin = Depends(get_current_admin)
                     ):
     try:
         track_data = TrackCreateSchema.model_validate_json(data)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Invalid track data: {str(e)}")
     try:
-        user_id = user["id"]
+        admin_id = admin["id"]
         poster_url = None
         if track_poster:
             poster_url = await upload_to_storage(
                 settings.DEFAULT_IMAGE_BUCKET,
-                f"posters/{track_data.title}_{user_id}.jpg",
+                f"posters/{track_data.title}_{admin_id}.jpg",
                 track_poster
             )
 
@@ -60,12 +65,12 @@ async def add_track(data: str = Form(...),
         if track_audio:
             audio_url = await upload_to_storage(
                 settings.DEFAULT_AUDIO_BUCKET,
-                f"audios/{track_data.title}_{user_id}.mp3",
+                f"audios/{track_data.title}_{admin_id}.mp3",
                 track_audio
             )
 
         insert_data = {
-            "track_uploader_user_id": user_id,
+            "track_uploader_user_id": admin_id,
             "track_title": track_data.title,
             "track_info": track_data.info,
             "track_duration": track_data.duration,
