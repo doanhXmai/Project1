@@ -42,4 +42,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE 8000
 
 # Chạy app (Lúc này uvicorn đã được tìm thấy nhờ biến PATH ở trên)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+CMD sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
