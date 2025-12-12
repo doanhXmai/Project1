@@ -1,0 +1,23 @@
+# Dockerfile.dev
+FROM python:3.11-slim
+
+# Tắt prompt khi cài
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Cài ffmpeg (vì bạn cần)
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
+
+# Tạo thư mục làm việc
+WORKDIR /app
+
+# Copy file requirements
+COPY requirements.txt .
+
+# Cài thư viện Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# EXPOSE port
+EXPOSE 8000
+
+# Chạy uvicorn với reload
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

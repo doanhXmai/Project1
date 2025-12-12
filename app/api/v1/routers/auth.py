@@ -1,13 +1,22 @@
+from datetime import datetime, timezone, timedelta
+
 from fastapi import APIRouter , HTTPException, status
 
+from app.api.v1.crud.auth_crud import update_user_password_by_id
 from app.core.config import Settings
-from app.core.supabase import supabase_py, supabase_py_service_client
-from app.schemas.auth_schema import RegisterRequestByEmail
+from app.core.supabase import supabase_py_service_client
+from app.schemas.auth_schema import RegisterRequestByEmail, VerifyOtp
 from app.schemas.auth_schema import LoginRequestByEmail
 from app.schemas.auth_schema import RefreshTokenRequest
 from app.schemas.auth_schema import ForgotPasswordRequestByEmail
 from app.schemas.auth_schema import ResetPasswordRequest
 from app.schemas.auth_schema import ChangePasswordRequestByEmail
+from app.api.v1.crud import user_crud, password_resets_crud
+from app.schemas.password_resets_schema import PasswordResetsCreateSchema
+from app.utils.email_utils import send_otp_email
+from app.utils.generate_otp import generate_otp
+
+from app.utils.log import ConsoleLogger as cl
 
 settings = Settings()
 
@@ -20,7 +29,7 @@ def register_user_by_email(request: RegisterRequestByEmail):
     if check_admin.data:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail = "Email already exists")
 
-    response = supabase_py.auth.sign_up({
+    response = supabase_py_service_client.auth.sign_up({
         "email": request.email,
         "password": request.password
     })
@@ -30,14 +39,18 @@ def register_user_by_email(request: RegisterRequestByEmail):
 
 @router.post("/login-by-email")
 def login_user_by_email(request: LoginRequestByEmail):
-    response = supabase_py.auth.sign_in_with_password({
-        "email": request.email,
-        "password": request.password
-    })
+    try:
+        response = supabase_py_service_client.auth.sign_in_with_password({
+            "email": request.email,
+            "password": request.password
+        })
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Email or password incorrect")
+
 
     user_id = response.user.id
 
-    user_record = supabase_py_service_client.table("Users").select("*").eq("user_id", user_id).execute()
+    user_record = user_crud.get_user_by_id(user_id)
 
     if not user_record.data:
         raise HTTPException(status_code=404, detail="User not in public.Users")
@@ -63,34 +76,71 @@ def refresh_access_token(request: RefreshTokenRequest):
         return {
             "access_token": response.session.access_token,
             "refresh_token": response.session.refresh_token,
-            "expires_in": response.session.expires_in,
-            "user": response.user
+            "expires_in": response.session.expires_in
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/forgot-password-by-email")
-def forgot_password_by_email(request: ForgotPasswordRequestByEmail):
-    try:
-        supabase_py_service_client.auth.reset_password_email(request.email)
-        return {"message": "Password reset email sent"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+@router.post("/request-password-reset")
+def request_password_reset(req: ForgotPasswordRequestByEmail):
+    email = req.email.lower()
 
-@router.post("/reset-password")
-def reset_password(request: ResetPasswordRequest):
+    user = user_crud.get_user_by_email(email)
+    if not user.data:
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    otp = generate_otp(100000, 999999)
+
+    password_resets_crud.create_password_resets(PasswordResetsCreateSchema(
+        passwordResets_user_id = user.data[0]["user_id"],
+        passwordResets_email = email,
+        passwordResets_otp_code = otp,
+        passwordResets_expired_at = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+    ))
+
+    send = send_otp_email(to_email=email, otp_code=otp)
+
+    return {"status": send, "message": "OTP send successfully"}
+
+@router.post("/verify-otp-reset-password")
+def verify_otp_reset_password(request: VerifyOtp):
     try:
-        supabase_py_service_client.auth.update_user(
-            {
-                "password": request.new_password
-            },
-            {
-                "access_token": request.access_token
-            }
+        res = password_resets_crud.get_valid_otp(email=request.email, otp=request.otp)
+
+        cl.info(f"email: {request.email}")
+        cl.info(f"OTP: {request.otp}")
+
+        if not res.data:
+            raise HTTPException(status_code=400, detail="Invalid OTP")
+
+        record = res.data[0]
+
+        expires_at = datetime.fromisoformat(
+            record["passwordResets_expired_at"].replace('Z', "+00:00")
         )
-        return {"message": "Password reset successfully"}
+
+        now = settings.DATE_NOW
+
+        if now > expires_at:
+            raise HTTPException(status_code=400, detail="OTP expired")
+
+        mark_otp = password_resets_crud.mark_otp_used(record["passwordResets_id"])
+
+        used = mark_otp.data[0]["passwordResets_used"]
+        user_id = record["passwordResets_user_id"]
+        try:
+            auth_update = update_user_password_by_id(user_id, request.new_password)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to update password in Auth system - {e}")
+
+        return {
+            "message": "OTP verified successfully",
+            "email": request.email,
+            "success": used
+        }
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/change-password-by-email")
 def change_password_by_email(request: ChangePasswordRequestByEmail):
@@ -104,7 +154,7 @@ def change_password_by_email(request: ChangePasswordRequestByEmail):
         access_token = login_resp.session.access_token
         supabase_py_service_client.auth.update_user(
             { "password": request.new_password },
-            { "access_token": access_token}
+            { "access_token": access_token }
         )
         return {"message": "Password changed successfully"}
     except Exception as e:

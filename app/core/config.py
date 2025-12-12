@@ -10,8 +10,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None
 
     STORAGE_PUBLIC_PATH: str = "/storage/v1/object/public"
-    DEFAULT_IMAGE_BUCKET: str = "images"
-    DEFAULT_AUDIO_BUCKET: str = "audios"
+
+    IMAGE_BUCKET: str = "images"
+    AUDIO_BUCKET: str = "audios"
+    LYRIC_BUCKET: str = "lyrics"
 
     SUPABASE_URL: str | None = None
     SUPABASE_KEY: str | None = None
@@ -21,6 +23,13 @@ class Settings(BaseSettings):
     SECRET_KEY: str | None = None
     ALGORITHM: str | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int | None = None
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM: str | None = None
+
 
     DATE_NOW: datetime = datetime.now(timezone.utc).isoformat()
 

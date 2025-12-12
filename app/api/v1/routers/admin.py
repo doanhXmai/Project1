@@ -1,15 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 
-from uuid import UUID
-
-
-from app.api.v1.crud.admin_crud import admin_login
 from app.core.config import Settings
 from app.schemas.admin_schema import LoginRequest, AdminResponseSchema, TokenResponse, AdminCreateSchema, \
     DisableAdminRequest
 from app.schemas.default_schema import DefaultSuccessful
 from app.schemas.user_schema import DisableUserRequest
-from app.services.admin_service import get_current_admin, create_admin, disable_or_enable_user, disable_or_enable_admin
+from app.services.admin_service import get_current_admin, create_admin, disable_or_enable_user, disable_or_enable_admin, admin_login
 from app.utils.auth_utils import create_access_token
 from app.utils.enum_utils import change_role_enum
 from app.utils.password_utils import verify_password

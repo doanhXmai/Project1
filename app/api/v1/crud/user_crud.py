@@ -3,13 +3,26 @@ from uuid import UUID
 from pydantic import EmailStr
 
 from app.utils.log import ConsoleLogger as cl
-from app.core.supabase import supabase_py
+from app.core.supabase import supabase_py_service_client
+
+def get_user_by_id(user_id: UUID):
+    return supabase_py_service_client.table("Users").select("*").eq("user_id", user_id).execute()
+
+def update_user_status_by_id(user_id: UUID, status: bool = False):
+    return supabase_py_service_client.table("Users").update({"user_status": status}).eq("user_id", user_id).execute()
+
+
+def update_user_by_id(update_data, user_id: UUID):
+    return supabase_py_service_client.table("Users").update(update_data).eq("user_id", user_id).execute()
+
+def get_user_by_email(user_email: EmailStr):
+    return supabase_py_service_client.table("Users").select("*").eq("user_email", user_email).execute()
 
 def check_user_field(field, query) -> bool:
     try:
         if query not in ["user_id", "user_name", "user_email", "user_phone"]:
             raise ValueError("Invalid field")
-        result = supabase_py.table("Users").select("*").eq(query, field).excute()
+        result = supabase_py_service_client.table("Users").select("*").eq(query, field).excute()
 
         return bool(result.data)
 

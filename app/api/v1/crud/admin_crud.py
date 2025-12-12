@@ -1,27 +1,59 @@
 from pydantic import EmailStr
 
-from app.core.supabase import supabase_py, supabase_py_service_client
+from app.core.config import Settings
+from app.core.supabase import supabase_py_service_client
+from app.schemas.admin_schema import AdminCreateSchema
 from app.utils.log import ConsoleLogger as cl
+from app.utils.password_utils import hash_password
 
-def admin_login(admin_name: str, admin_email: EmailStr, admin_phone: str):
-    try:
-        return (supabase_py
-                                    .table("Admins")
-                                    .select("*")
-                                    .eq("admin_name", admin_name)
-                                    .eq("admin_email", admin_email)
-                                    .eq("admin_phone", admin_phone)
-                                    .execute())
-    except Exception as e:
-        print ("admin login in  crud error: ", e)
-        return None
+settings = Settings()
+
+def get_admin(admin_name: str, admin_email: EmailStr, admin_phone: str):
+    return (supabase_py_service_client
+            .table("Admins")
+            .select("*")
+            .eq("admin_name", admin_name)
+            .eq("admin_email", admin_email)
+            .eq("admin_phone", admin_phone)
+            .execute())
+
+def get_admin_by_id(admin_id: int):
+    return supabase_py_service_client.table("Admins").select("*").eq("admin_id", admin_id).execute()
+
+def get_admin_role_by_id(admin_id: int):
+    return supabase_py_service_client.table("Admins").select("admin_role").eq("admin_id", admin_id).execute()
+
+def get_admin_by_email(admin_email: EmailStr):
+    return supabase_py_service_client.table("Admins").select("*").eq("admin_email", admin_email).execute()
+
+def get_admin_by_name(admin_name: str):
+    return supabase_py_service_client.table("Admins").select("*").eq("admin_name", admin_name).execute()
+
+def get_admin_by_phone(admin_phone: str):
+    return supabase_py_service_client.table("Admins").select("*").eq("admin_phone", admin_phone).execute()
+
+def create_admin(admin_in: AdminCreateSchema):
+    supabase_py_service_client.table("Admins").insert({
+        "admin_email": admin_in.admin_email,
+        "admin_phone": admin_in.admin_phone,
+        "admin_name": admin_in.admin_name,
+        "admin_password": hash_password(admin_in.admin_password),
+        "admin_role": admin_in.admin_role,
+        "admin_display_name": admin_in.admin_display_name,
+        "admin_create_date": settings.DATE_NOW.isoformat(),
+        "admin_status": True
+    }).execute()
+
+def update_admin_status_by_id(admin_id: int, status: bool = False):
+    return supabase_py_service_client.table("Admins").update({"admin_status": status}).eq("admin_id", admin_id).execute()
+
 
 def check_admin_field(field, query) -> bool:
     try:
         if query not in ["admin_id", "admin_name", "admin_email", "admin_phone"]:
             raise ValueError("Invalid field")
 
-        result = supabase_py.table("Admins").select("*").eq(query, field).execute()
+        result = supabase_py_service_client.table("Admins").select("*").eq(query, field).execute()
         return bool(result.data)
 
     except Exception as e:

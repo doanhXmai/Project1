@@ -1,33 +1,18 @@
-import requests
 from fastapi import Header, HTTPException
 
-from app.core.config import Settings
-
-settings = Settings()
+from app.core.supabase import supabase_py
 
 async def get_current_user(authorization: str = Header(...)):
-    """
-    Lấy access token từ header của request
-    :param authorization:
-    :return: user
-    """
     if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header format")
+        raise HTTPException(status_code=401, detail="Invalid auth format")
+
     access_token = authorization.split(" ")[1]
 
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "apikey": settings.SUPABASE_KEY
-    }
-
     try:
-        user_response = requests.get(f"{settings.SUPABASE_URL}/auth/v1/user", headers=headers)
-
-        if user_response.status_code != 200:
+        user = supabase_py.auth.get_user(access_token)
+        if not user or not user.user:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-        user = user_response.json()
-
-        return user
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
+        return user.user  # trả về thông tin user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token invalid or expired")

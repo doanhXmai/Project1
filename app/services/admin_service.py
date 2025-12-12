@@ -4,12 +4,13 @@ from fastapi import HTTPException, Header
 
 from uuid import UUID
 
-from app.core.supabase import supabase_py, supabase_py_service_client, settings
+from pydantic import EmailStr
+
 from app.enums.enums import AdminRoleEnum
 from app.schemas.admin_schema import AdminResponseSchema, AdminCreateSchema
 from app.utils.auth_utils import verify_access_token
 from app.utils.enum_utils import change_role_enum
-from app.utils.password_utils import hash_password
+from app.api.v1.crud import admin_crud, user_crud
 
 # ============== get admin from token =================#
 async def  get_current_admin(authorization: str = Header(...)):
@@ -21,17 +22,24 @@ async def  get_current_admin(authorization: str = Header(...)):
     if not admin_id:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    result = supabase_py.table("Admins").select("*").eq("admin_id", admin_id).execute()
+    result = admin_crud.get_admin_by_id(admin_id)
     if not result.data or not result.data[0]["admin_status"]:
         raise HTTPException(status_code=403, detail="Admin not found or inactive")
 
     return result.data[0]
 
+def admin_login(admin_name: str, admin_email: EmailStr, admin_phone: str):
+    try:
+        return admin_crud.get_admin(admin_name, admin_email, admin_phone)
+    except Exception as e:
+        print ("admin login in  crud error: ", e)
+        return None
+
 # ============== check admin exist =================#
 async def check_admin(account_info: AdminCreateSchema):
-    check_name = supabase_py.table("Admins").select("*").eq("admin_name", account_info.admin_name).execute()
-    check_email = supabase_py.table("Admins").select("*").eq("admin_email", account_info.admin_email).execute()
-    check_phone = supabase_py.table("Admins").select("*").eq("admin_phone", account_info.admin_phone).execute()
+    check_name = admin_crud.get_admin_by_name(account_info.admin_name)
+    check_email = admin_crud.get_admin_by_email(account_info.admin_email)
+    check_phone = admin_crud.get_admin_by_phone(account_info.admin_phone)
 
     if check_name.data or check_email.data or check_phone.data:
         return True
@@ -42,16 +50,7 @@ async def create_account(account_info: AdminCreateSchema):
     if await check_admin(account_info):
         return False, "Admin already exits"
     try:
-        supabase_py_service_client.table("Admins").insert({
-            "admin_email": account_info.admin_email,
-            "admin_phone": account_info.admin_phone,
-            "admin_name": account_info.admin_name,
-            "admin_password": hash_password(account_info.admin_password),
-            "admin_role": account_info.admin_role,
-            "admin_display_name": account_info.admin_display_name,
-            "admin_create_date": settings.DATE_NOW.isoformat(),
-            "admin_status": True
-        }).execute()
+        admin_crud.create_admin(account_info)
         return True, "Create admin successfully"
     except Exception as e:
         print("Create account error: ", e)
@@ -99,9 +98,7 @@ def disable_or_enable_user(role: AdminRoleEnum, user_id: UUID, switch: bool = Fa
         if not check:
             return check, msg
 
-        result = supabase_py_service_client.table("Users").update({
-            "user_status": switch
-        }).eq("user_id", user_id).execute()
+        result = user_crud.update_user_status_by_id(user_id, switch)
 
         if len(result.data) == 0:
             return False, "User not found"
@@ -112,14 +109,12 @@ def disable_or_enable_user(role: AdminRoleEnum, user_id: UUID, switch: bool = Fa
 
 def disable_or_enable_admin(role: AdminRoleEnum, admin_id: int, switch: bool = False):
     try:
-        target_role = supabase_py.table("Admins").select("admin_role").eq("admin_id", admin_id).execute()
+        target_role = admin_crud.get_admin_role_by_id(admin_id)
 
         check, msg = can_disable_or_enable_admin(role = role, target_role = change_role_enum(target_role))
         if not check: return check, msg
 
-        result = supabase_py_service_client.table("Admins").update({
-            "admin_status": switch
-        }).eq("admin_id", admin_id).execute()
+        result = admin_crud.update_admin_status_by_id(admin_id, switch)
 
         if len(result.data) == 0:
             return False, "Admin not found"

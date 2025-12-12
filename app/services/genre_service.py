@@ -1,3 +1,5 @@
+from typing import List
+
 from app.api.v1.crud import genre_crud
 from app.schemas.genre_schema import GenreCreateSchema
 
@@ -78,3 +80,19 @@ def update_genre(admin_id: int, genre_id: int, genre_in: GenreCreateSchema):
     except Exception as e:
          cl.error (f"Update genre error: {e}")
          return None
+
+
+def id_to_genre(singer_name: str):
+    try:
+        result = genre_crud.get_genre_id_by_name(singer_name)
+        return result.data[0]
+    except Exception as e:
+        cl.error(f"id to genre scheme error: {e}")
+        return None
+
+
+def id_to_genres(singer_names: List[str]):
+    list_id = []
+    for name in singer_names:
+        list_id.append(id_to_genre(name)["genre_id"])
+    return list_id

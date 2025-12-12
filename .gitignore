@@ -1,13 +1,71 @@
-# Byte-compiled / cache
+# ============================
+# Python cache
+# ============================
 __pycache__/
 *.py[cod]
+*$py.class
 
-# Virtual environment
+# ============================
+# Virtual environments
+# ============================
 venv/
+env/
+.venv/
+ENV/
+
+# ============================
+# Environment files
+# ============================
 .env
+.env.*
+*.env
 
-models.py
+# ============================
+# OS files
+# ============================
+.DS_Store
+Thumbs.db
 
+# ============================
+# Logs
+# ============================
+*.log
+logs/
+*.out
+
+# ============================
+# IDE / Editor settings
+# ============================
 .idea/
-.cache
+.vscode/
 *.iml
+.cache/
+
+# ============================
+# Docker files
+# ============================
+# Ignore docker build cache
+docker-compose.override.yml
+docker-data/
+*.pid
+
+# ============================
+# Bytecode / Build artifacts
+# ============================
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ============================
+# Unit test / Coverage
+# ============================
+.coverage
+htmlcov/
+coverage.xml
+pytest_cache/
+
+# ============================
+# Project-specific
+# ============================
+models.py       # bạn yêu cầu bỏ file này

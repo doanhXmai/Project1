@@ -21,6 +21,11 @@ class RegisterRequestByEmail(BaseModel):
 class ForgotPasswordRequestByEmail(BaseModel):
     email: str
 
+class VerifyOtp(BaseModel):
+    email: EmailStr
+    otp: str
+    new_password: str
+
 class ChangePasswordRequestByEmail(BaseModel):
     email: EmailStr
     old_password: str

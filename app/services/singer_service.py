@@ -4,6 +4,7 @@ from app.schemas.singer_schema import SingerCreateSchema, SingerResponseSchema
 from app.api.v1.crud import singer_crud
 from app.services.history_update_service import create_history
 from app.utils.log import ConsoleLogger as cl
+from typing import List
 
 def get_or_create_singer(singer_in: SingerCreateSchema, admin_id: int):
     try:
@@ -82,3 +83,17 @@ def update_singer(admin_id: int, singer_id: int, singer_in: SingerCreateSchema):
 
     except Exception as e:
         cl.error(f"Update singer error: {e}")
+
+def id_to_singer(singer_name: str):
+    try:
+        result = singer_crud.get_singer_id_by_name(singer_name)
+        return result.data[0]
+    except Exception as e:
+        cl.error(f"id to singer scheme error: {e}")
+        return None
+
+def id_to_singers(singer_names: List[str]):
+    list_id = []
+    for name in singer_names:
+        list_id.append(id_to_singer(name)["singer_id"])
+    return list_id
