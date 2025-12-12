@@ -40,6 +40,13 @@
   "password": "abc@123"
 }
 ```
+### Example Response
+```json
+{
+  "access_token": "your_access_token",
+  "refresh_token": "your_refresh_token"
+}
+```
 
 ## 3. Refresh access token by email
 **Method:** `POST`
@@ -47,21 +54,29 @@
 **Description:** Tạo mới access token sau mỗi lần request
 
 ### Request Body
-| Filed                | Type    | Required | Description                        |
-|----------------------|---------|----------|------------------------------------|
-| refresh_access_token | string  | ✅        | token dùng để cấp lại access token |
+| Filed          | Type    | Required | Description                        |
+|----------------|---------|----------|------------------------------------|
+| refresh_token  | string  | ✅        | token dùng để cấp lại access token |
 
 ### Example Request
 ```json
 {
-  "access_token": "youraccesstoken...."
+  "refresh_token": "your_refresh_token...."
+}
+```
+### Example Response
+```json
+{
+ "access_token": "your_access_token",
+  "refresh_token": "your_refresh_token",
+  "expires_in": "30"
 }
 ```
 
-## 4. Forgot password by email
+## 4. Request Password Reset
 **Method:** `POST`
-**Endpoint:** `/api/v1/auth/forgot-password-by-email`
-**Description:** Lấy lại mật khẩu khi đã quên mật khẩu
+**Endpoint:** `/api/v1/auth/request-password-reset`
+**Description:** Lấy lại mật khẩu khi đã quên mật khẩu - nhận 1 mã OTP về email
 
 ### Request Body
 | Filed    | Type    | Required | Description         |
@@ -74,17 +89,32 @@
   "email": "user@example.com"
 }
 ```
+### Example Response
+#### status_code = 200
+```json
+{
+  "status": true,
+  "message": "OTP send successfully"
+}
+```
+#### status_code = 404
+```json
+{
+  "detail": "Email not found"
+}
+```
 
-## 5. Reset Password
+## 5. Verify OTP and Reset Password
 **Method:** `POST`
-**Endpoint:** `/api/v1/auth/reset-password`
+**Endpoint:** `/api/v1/auth/verify-otp-reset-password`
 **Description:** Thay đổi mật khẩu
 
 ### Request Body
 | Filed        | Type    | Required | Description         |
 |--------------|---------|----------|---------------------|
-| password     | string  | ✅        | Mật khẩu người dùng |
-| access_token | string  | ✅        | access token tạm    |
+| email        | string  | ✅        | Email người dùng    |
+| otp          | string  | ✅        | otp được gửi về     |
+| new_password | string  | ✅        | mật khẩu mới để đổi |
 
 ### Example Request
 ```json
@@ -93,6 +123,27 @@
   "password": "abc@123"
 }
 ```
+### Example Response
+#### status_code = 200
+```json
+{
+  "message": "OTP verified successfully",
+  "email": "your_email@gmail.com",
+  "success": true
+}
+```
+#### status_code = 400
+```json
+{
+  "detail": "Invalid OTP"
+}
+```
+```json
+{
+  "detail": "OTP expired"
+}
+```
+
 ## 6. Change password by email
 **Method:** `POST`
 **Endpoint:** `/api/v1/auth/change-password-by-email`
@@ -111,5 +162,18 @@
   "email": "user@example.com",
   "old_password": "abc@123",
   "new_password": "xyz@456"
+}
+```
+### Example Response
+#### status_code = 200
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+#### status_code = 401
+```json
+{
+  "detail": "Old password is incorrect"
 }
 ```

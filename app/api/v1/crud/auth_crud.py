@@ -8,3 +8,6 @@ def update_user_password_by_id(user_id: UUID, password: str):
         uid=user_id,
         attributes={"password": password}
     )
+
+def refresh_access_token(refresh_token):
+    return supabase_py_service_client.auth.refresh_session(refresh_token)

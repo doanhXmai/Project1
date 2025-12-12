@@ -11,7 +11,7 @@ from app.schemas.auth_schema import RefreshTokenRequest
 from app.schemas.auth_schema import ForgotPasswordRequestByEmail
 from app.schemas.auth_schema import ResetPasswordRequest
 from app.schemas.auth_schema import ChangePasswordRequestByEmail
-from app.api.v1.crud import user_crud, password_resets_crud
+from app.api.v1.crud import user_crud, password_resets_crud, auth_crud
 from app.schemas.password_resets_schema import PasswordResetsCreateSchema
 from app.utils.email_utils import send_otp_email
 from app.utils.generate_otp import generate_otp
@@ -68,7 +68,7 @@ def login_user_by_email(request: LoginRequestByEmail):
 @router.post("/refresh-access-token")
 def refresh_access_token(request: RefreshTokenRequest):
     try:
-        response = supabase_py_service_client.auth.refresh_session(request.refresh_token)
+        response = auth_crud.refresh_access_token(request.refresh_token)
 
         if response is None:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
