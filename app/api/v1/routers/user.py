@@ -26,7 +26,7 @@ async def get_user_info(user=Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/update-user-info")
+@router.patch("/update-user-info")
 async def update_user_info(display_name: str = Form(None),
                            info: str = Form(None),
                            avatar: UploadFile = File(None),
@@ -37,18 +37,28 @@ async def update_user_info(display_name: str = Form(None),
         if avatar:
             file_path = f"avatars/{user_id}.jpg"
             avatar_url = await upload_to_storage(settings.IMAGE_BUCKET, file_path, avatar)
-        update_data = {
-            "user_display_name": display_name,
-            "user_info": info
-        }
+        update_data = {}
+
+        if display_name is not None:
+            update_data["user_display_name"] = display_name
+
+        if info is not None:
+            update_data["user_info"] = info
 
         if avatar_url:
             update_data["user_avatar_url"] = avatar_url
 
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No data to update")
+
         res = user_crud.update_user_by_id(update_data, user_id)
         cl.info(res)
 
-        return {"message": "Update successful", "avatar_url": avatar_url}
+        if not res.data:
+            raise HTTPException(status_code=400, detail="Update failed")
 
+        return {"message": "Update successful"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
