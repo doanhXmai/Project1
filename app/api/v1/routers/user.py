@@ -78,10 +78,7 @@ def get_all_user(admin = Depends(get_current_admin)):
         if not result.data:
             raise HTTPException(status_code=404, detail="Users not found")
 
-        return {
-            "number": len(result.data),
-            "data": result.data
-        }
+        return result.data
     except HTTPException:
         raise
     except Exception as e:
