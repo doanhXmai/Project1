@@ -3,10 +3,11 @@ import os
 import tempfile
 from shlex import quote
 
-from fastapi import APIRouter, Form, UploadFile, File, Depends, HTTPException
-from typing import List
+from fastapi import APIRouter, Form, UploadFile, File, Depends, HTTPException, Query
+from typing import List, Optional
 
 from pydantic import ValidationError
+from sqlalchemy.testing.plugin.plugin_base import config
 
 from app.services.track_service import resolve_bucket_and_path, make_filename
 from app.utils.log import ConsoleLogger as cl
@@ -34,15 +35,28 @@ def get_all_tracks():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@router.get("/get-tracks")
-def get_tracks(request: GetTrackRequest):
-    try:
-        result = supabase_py_service_client.table("Tracks").select("*").like("track_title", request.name).execute()
-        if not result.data:
-            return {"status": "success", "message": "Track not found!"}
-        return {"status": "success", "message": result.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/search")
+def search_tracks(
+        q: str = Query(..., min_length=1),
+        page: int = Query(1, ge=1),
+        page_size: int = Query(10, ge=1, le=50)
+):
+    result = supabase_py_service_client.rpc(
+        "search_tracks",
+        {
+            "keyword": q,
+            "page": page,
+            "page_size": page_size
+        }
+    ).execute()
+
+    return {
+        "query": q,
+        "page": page,
+        "page_size": page_size,
+        "number": len(result.data),
+        "data": result.data
+    }
 
 @router.get("/get-banners")
 def get_banners():
@@ -150,3 +164,4 @@ async def add_track(data: str = Form(...),
         "duration_time": duration_time,
         "files": uploaded_urls
     }
+

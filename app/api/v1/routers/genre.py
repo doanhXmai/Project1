@@ -35,7 +35,7 @@ def add_genre(request: GenreRequest, admin=Depends(get_current_admin)):
         if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
             raise HTTPException(status_code=403, detail="You don't have the authority to perform this action")
 
-        genre, code = get_or_create_genre(genre_in = GenreCreateSchema(genre_name = request.genre_name, genre_info = None if request.genre_info == "" else request.info), admin_id=admin_id)
+        genre, code = get_or_create_genre(genre_in = GenreCreateSchema(genre_name = request.genre_name, genre_info = None if request.genre_info == "" else request.genre_info), admin_id=admin_id)
 
         if code == 2:
             msg = "Add genre successfully"
@@ -45,7 +45,8 @@ def add_genre(request: GenreRequest, admin=Depends(get_current_admin)):
             msg = "Add genre failed"
 
         return {"message": msg}
-
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
