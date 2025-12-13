@@ -8,9 +8,11 @@ from app.core.supabase import supabase_py_service_client
 def get_user_by_id(user_id: UUID):
     return supabase_py_service_client.table("Users").select("*").eq("user_id", user_id).execute()
 
+def get_user():
+    return supabase_py_service_client.table("Users").select("*").execute()
+
 def update_user_status_by_id(user_id: UUID, status: bool = False):
     return supabase_py_service_client.table("Users").update({"user_status": status}).eq("user_id", user_id).execute()
-
 
 def update_user_by_id(update_data, user_id: UUID):
     return supabase_py_service_client.table("Users").update(update_data).eq("user_id", user_id).execute()

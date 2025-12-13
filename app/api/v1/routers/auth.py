@@ -25,17 +25,22 @@ router = APIRouter(prefix=f"{settings.API_VERSION}/auth", tags=["Auth"])
 # use email
 @router.post("/register-by-email")
 def register_user_by_email(request: RegisterRequestByEmail):
-    check_admin = supabase_py_service_client.table("Admins").select("*").eq("admin_email", request.email).execute()
-    if check_admin.data:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail = "Email already exists")
+    try:
+        check_admin = supabase_py_service_client.table("Admins").select("*").eq("admin_email", request.email).execute()
+        if check_admin.data:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
 
-    response = supabase_py_service_client.auth.sign_up({
-        "email": request.email,
-        "password": request.password
-    })
-    if response.user is None:
-        raise HTTPException(status_code=400, detail = response)
-    return {"message": "Register successful"}
+        response = supabase_py_service_client.auth.sign_up({
+            "email": request.email,
+            "password": request.password
+        })
+        if response.user is None:
+            raise HTTPException(status_code=400, detail=response)
+        return {"message": "Register successful"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Register account error: {e}")
 
 @router.post("/login-by-email")
 def login_user_by_email(request: LoginRequestByEmail):
@@ -83,24 +88,29 @@ def refresh_access_token(request: RefreshTokenRequest):
 
 @router.post("/request-password-reset")
 def request_password_reset(req: ForgotPasswordRequestByEmail):
-    email = req.email.lower()
+    try:
+        email = req.email.lower()
 
-    user = user_crud.get_user_by_email(email)
-    if not user.data:
-        raise HTTPException(status_code=404, detail="Email not found")
+        user = user_crud.get_user_by_email(email)
+        if not user.data:
+            raise HTTPException(status_code=404, detail="Email not found")
 
-    otp = generate_otp(100000, 999999)
+        otp = generate_otp(100000, 999999)
 
-    password_resets_crud.create_password_resets(PasswordResetsCreateSchema(
-        passwordResets_user_id = user.data[0]["user_id"],
-        passwordResets_email = email,
-        passwordResets_otp_code = otp,
-        passwordResets_expired_at = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
-    ))
+        password_resets_crud.create_password_resets(PasswordResetsCreateSchema(
+            passwordResets_user_id=user.data[0]["user_id"],
+            passwordResets_email=email,
+            passwordResets_otp_code=otp,
+            passwordResets_expired_at=(datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+        ))
 
-    send = send_otp_email(to_email=email, otp_code=otp)
+        send = send_otp_email(to_email=email, otp_code=otp)
 
-    return {"status": send, "message": "OTP send successfully"}
+        return {"status": send, "message": "OTP send successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Request password reset error: {e}")
 
 @router.post("/verify-otp-reset-password")
 def verify_otp_reset_password(request: VerifyOtp):
