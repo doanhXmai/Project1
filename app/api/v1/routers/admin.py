@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 
+from app.api.v1.crud import admin_crud
 from app.core.config import Settings
 from app.schemas.admin_schema import LoginRequest, AdminResponseSchema, TokenResponse, AdminCreateSchema, \
     DisableAdminRequest
 from app.schemas.default_schema import DefaultSuccessful
 from app.schemas.user_schema import DisableUserRequest
 from app.services.admin_service import get_current_admin, create_admin, disable_or_enable_user, disable_or_enable_admin, admin_login
+from app.utils import enum_utils
 from app.utils.auth_utils import create_access_token
 from app.utils.enum_utils import change_role_enum
 from app.utils.password_utils import verify_password
@@ -13,6 +15,27 @@ from app.utils.password_utils import verify_password
 settings = Settings()
 
 router = APIRouter(prefix=f"{settings.API_VERSION}/admin", tags=["Admin"])
+
+@router.get("/get-all-admins")
+def get_all_admin(admin = Depends(get_current_admin)):
+    try:
+        admin_role = admin["admin_role"]
+        if (not enum_utils.check_super_admin(admin_role) and
+                not enum_utils.check_admin(admin_role)):
+            raise HTTPException(status_code=403, detail="You don't have the authority to perform this action")
+
+        result = admin_crud.get_all_admins()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Admins not found")
+
+        return {
+            "number": len(result.data),
+            "data": result.data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get all admins error: {e}")
 
 # ============== login =================#
 @router.post("/login", response_model=TokenResponse)

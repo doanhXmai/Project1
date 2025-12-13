@@ -3,8 +3,10 @@ from fastapi import APIRouter, HTTPException, Depends, Form, UploadFile, File
 from app.core.config import Settings
 from app.core.supabase import supabase_py_service_client
 from app.schemas.user_schema import UserResponseSchema
+from app.services.admin_service import get_current_admin
 from app.services.user_service import get_current_user
 from app.api.v1.crud import user_crud
+from app.utils import enum_utils
 
 from app.utils.log import ConsoleLogger as cl
 from app.utils.storage_utils import upload_to_storage
@@ -62,3 +64,25 @@ async def update_user_info(display_name: str = Form(None),
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/get-all-users")
+def get_all_user(admin = Depends(get_current_admin)):
+    try:
+        admin_role = admin["admin_role"]
+        if (not enum_utils.check_super_admin(admin_role) and
+                not enum_utils.check_admin(admin_role) and
+                not enum_utils.check_support_staff(admin_role)):
+            raise HTTPException(status_code=403, detail="You don't have the authority to perform this action")
+
+        result = user_crud.get_user()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Users not found")
+
+        return {
+            "number": len(result.data),
+            "data": result.data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get all users error: {e}")

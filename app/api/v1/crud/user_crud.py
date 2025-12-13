@@ -9,7 +9,7 @@ def get_user_by_id(user_id: UUID):
     return supabase_py_service_client.table("Users").select("*").eq("user_id", user_id).execute()
 
 def get_user():
-    return supabase_py_service_client.table("Users").select("*").execute()
+    return supabase_py_service_client.table("Users").select("user_id, user_name, user_status, user_email").execute()
 
 def update_user_status_by_id(user_id: UUID, status: bool = False):
     return supabase_py_service_client.table("Users").update({"user_status": status}).eq("user_id", user_id).execute()
