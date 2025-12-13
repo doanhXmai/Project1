@@ -52,7 +52,19 @@ def login(request: LoginRequest):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         token = create_access_token(admin["admin_id"])
+        last_login = admin_crud.update_last_login(admin["admin_id"])
+
+        if not last_login.data:
+            return {
+                "access_token": token,
+                "token_type": "bearer",
+                "role": result.data[0]["admin_role"],
+                "Have a error": "Last login update failed"
+            }
+
         return {"access_token": token, "token_type": "bearer", "role": result.data[0]["admin_role"]}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

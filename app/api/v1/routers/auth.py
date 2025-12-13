@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 
 from app.api.v1.crud.auth_crud import update_user_password_by_id
 from app.core.config import Settings
@@ -87,7 +87,10 @@ def refresh_access_token(request: RefreshTokenRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/request-password-reset")
-def request_password_reset(req: ForgotPasswordRequestByEmail):
+def request_password_reset(
+        req: ForgotPasswordRequestByEmail,
+        background_tasks: BackgroundTasks
+):
     try:
         email = req.email.lower()
 
@@ -104,9 +107,15 @@ def request_password_reset(req: ForgotPasswordRequestByEmail):
             passwordResets_expired_at=(datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
         ))
 
-        send = send_otp_email(to_email=email, otp_code=otp)
+        # send = send_otp_email(to_email=email, otp_code=otp)
 
-        return {"status": send, "message": "OTP send successfully"}
+        background_tasks.add_task(
+            send_otp_email,
+            to_email = email,
+            otp_code = otp
+        )
+
+        return {"status": True, "message": "OTP send successfully"}
     except HTTPException:
         raise
     except Exception as e:

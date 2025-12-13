@@ -30,6 +30,7 @@ async def  get_current_admin(authorization: str = Header(...)):
 
 def admin_login(admin_name: str, admin_email: EmailStr, admin_phone: str):
     try:
+
         return admin_crud.get_admin(admin_name, admin_email, admin_phone)
     except Exception as e:
         print ("admin login in  crud error: ", e)

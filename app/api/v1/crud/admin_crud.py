@@ -50,6 +50,8 @@ def create_admin(admin_in: AdminCreateSchema):
 def update_admin_status_by_id(admin_id: int, status: bool = False):
     return supabase_py_service_client.table("Admins").update({"admin_status": status}).eq("admin_id", admin_id).execute()
 
+def update_last_login(admin_id: int):
+    return supabase_py_service_client.table("Admins").update({"admin_last_login": settings.DATE_NOW.isoformat()}).eq("admin_id", admin_id).execute()
 
 def check_admin_field(field, query) -> bool:
     try:

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from functools import lru_cache
 
 from pydantic.v1 import BaseSettings
@@ -30,8 +30,10 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str | None = None
     SMTP_FROM: str | None = None
 
+    RESEND_API_KEY: str | None = None
+    EMAIL_FROM: str | None = None
 
-    DATE_NOW: datetime = datetime.now(timezone.utc).isoformat()
+    DATE_NOW: datetime = (timedelta(hours=7) + datetime.now(timezone.utc)).isoformat()
 
     class Config:
         env_file = ".env"
