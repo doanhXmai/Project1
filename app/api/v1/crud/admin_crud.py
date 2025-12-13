@@ -18,7 +18,7 @@ def get_admin(admin_name: str, admin_email: EmailStr, admin_phone: str):
             .execute())
 
 def get_all_admins():
-    return supabase_py_service_client.table("Admins").select("admin_id, admin_name, admin_email, admin_phone, admin_status, admin_role, admin_create_date, admin_last_login").execute()
+    return supabase_py_service_client.table("Admins").select("admin_id, admin_name, admin_email, admin_phone, admin_status, admin_role, admin_create_date, admin_last_login, admin_display_name, admin_info").execute()
 
 def get_admin_by_id(admin_id: int):
     return supabase_py_service_client.table("Admins").select("*").eq("admin_id", admin_id).execute()
