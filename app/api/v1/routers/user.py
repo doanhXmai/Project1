@@ -16,7 +16,7 @@ router = APIRouter(prefix=f"{settings.API_VERSION}/user", tags=["User"])
 @router.get("/get-user-info", response_model=UserResponseSchema)
 async def get_user_info(user=Depends(get_current_user)):
     try:
-        user_id = user["id"]
+        user_id = user.id
         result = user_crud.get_user_by_id(user_id)
 
         if not result.data:

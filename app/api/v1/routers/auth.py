@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter , HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.api.v1.crud.auth_crud import update_user_password_by_id
 from app.core.config import Settings
@@ -12,6 +12,7 @@ from app.schemas.auth_schema import ForgotPasswordRequestByEmail
 from app.schemas.auth_schema import ChangePasswordRequestByEmail
 from app.api.v1.crud import user_crud, password_resets_crud, auth_crud
 from app.schemas.password_resets_schema import PasswordResetsCreateSchema
+from app.services.user_service import get_current_user
 from app.utils.email_utils import send_otp_email
 from app.utils.generate_otp import generate_otp
 
@@ -142,8 +143,10 @@ def verify_otp_reset_password(request: VerifyOtp):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/change-password-by-email")
-def change_password_by_email(request: ChangePasswordRequestByEmail):
+def change_password_by_email(request: ChangePasswordRequestByEmail, user=Depends(get_current_user)):
     try:
+        user_id = user.id
+
         login_resp = supabase_py_service_client.auth.sign_in_with_password({
             "email": request.email,
             "password": request.old_password
@@ -156,5 +159,7 @@ def change_password_by_email(request: ChangePasswordRequestByEmail):
             { "access_token": access_token }
         )
         return {"message": "Password changed successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
