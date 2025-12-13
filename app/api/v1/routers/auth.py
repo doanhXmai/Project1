@@ -9,7 +9,6 @@ from app.schemas.auth_schema import RegisterRequestByEmail, VerifyOtp
 from app.schemas.auth_schema import LoginRequestByEmail
 from app.schemas.auth_schema import RefreshTokenRequest
 from app.schemas.auth_schema import ForgotPasswordRequestByEmail
-from app.schemas.auth_schema import ResetPasswordRequest
 from app.schemas.auth_schema import ChangePasswordRequestByEmail
 from app.api.v1.crud import user_crud, password_resets_crud, auth_crud
 from app.schemas.password_resets_schema import PasswordResetsCreateSchema

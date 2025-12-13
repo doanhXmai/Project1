@@ -8,8 +8,6 @@ from typing import List
 
 from pydantic import ValidationError
 
-from app.services.genre_service import id_to_genres
-from app.services.singer_service import id_to_singers
 from app.services.track_service import resolve_bucket_and_path, make_filename
 from app.utils.log import ConsoleLogger as cl
 from app.core.config import Settings
@@ -20,6 +18,7 @@ from app.services.admin_service import get_current_admin
 from app.utils.storage_utils import upload_to_storage
 from app.utils.track_utils import get_duration
 from app.utils import enum_utils
+from app.api.v1.crud import track_crud
 
 settings = Settings()
 
@@ -45,8 +44,18 @@ def get_tracks(request: GetTrackRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @router.get("/get-banner")
-# def get_banners():
+@router.get("/get-banners")
+def get_banners():
+    try:
+        result = track_crud.get_track_banner()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Track banner not found")
+        return {
+            "number": len(result.data),
+            "data": result.data
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get banners error: {e}")
 
 
 @router.post("/add-track")

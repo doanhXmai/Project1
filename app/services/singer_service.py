@@ -41,7 +41,10 @@ def create_singer(singer_in: SingerCreateSchema, admin_id: int):
 
         new_singer = singer_crud.create_singer(singer_in)
 
-        status, msg = create_history({"singer_id": new_singer.data[0]["singer_id"]}, admin_id, [f"Add a new singer-{singer_in.singer_name}"], True)
+        status, msg = create_history({"singer_id": new_singer.data[0]["singer_id"]},
+                                     admin_id,
+                                     [f"Add a new singer-{singer_in.singer_name}"],
+                                     True)
 
         if not status:
             cl.warn(msg)

@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import HTTPException
 from fastapi import FastAPI
 
-from app.api.v1.routers import auth, genre, home, singer, user, admin, track
+from app.api.v1.routers import auth, genre, home, singer, user, admin, track, official_album
 from app.core.config import Settings
 
 app = FastAPI()
@@ -15,6 +15,7 @@ app.include_router(genre.router, tags = ["Genre"])
 app.include_router(home.router, tags = ["Home"])
 app.include_router(admin.router, tags = ["Admin"])
 app.include_router(track.router, tags = ["Track"])
+app.include_router(official_album.router, tags=["OfficialAlbum"])
 
 @app.get("/")
 def not_found():

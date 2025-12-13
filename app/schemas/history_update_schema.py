@@ -14,4 +14,5 @@ class HistoryUpdateCreateSchema(BaseModel):
     historyUpdate_description: Optional[str] = None
     historyUpdate_genre_id: Optional[int] = None
     historyUpdate_singer_id: Optional[int] = None
+    historyUpdate_official_album_id: Optional[int] = None
 
