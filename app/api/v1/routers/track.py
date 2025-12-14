@@ -30,8 +30,8 @@ def get_all_tracks():
     try:
         all_tracks = supabase_py_service_client.table("Tracks").select("*").execute()
         if not all_tracks.data:
-            return {"status": "success", "message": "The Data is not available!"}
-        return {"status": "success", "data": all_tracks.data}
+            return {"status": True, "message": "The Data is not available!"}
+        return all_tracks.data
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -64,10 +64,7 @@ def get_banners():
         result = track_crud.get_track_banner()
         if not result.data:
             raise HTTPException(status_code=404, detail="Track banner not found")
-        return {
-            "number": len(result.data),
-            "data": result.data
-        }
+        return result.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get banners error: {e}")
 
