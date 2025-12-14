@@ -20,6 +20,14 @@ def get_track_by_name(track_name: str):
 def get_track_by_id(track_id: int):
     return supabase_py_service_client.table("Tracks").select("*").eq("track_id", track_id).execute()
 
+def get_top_tracks(limit: int = 10):
+    return (supabase_py_service_client
+            .table("Tracks").select("track_id, track_title, track_poster_url, track_audio_url, track_duration, track_total_view")
+            .order("track_total_view", desc=True)
+            .limit(limit)
+            .execute()
+    )
+
 # def create_track_by_admin():
 #     return supabase_py_service_client.table("Tracks").insert({
 #

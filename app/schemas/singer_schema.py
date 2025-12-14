@@ -10,7 +10,7 @@ class SingerUpdateRequest(BaseModel):
     singer_id: int
     singer_name: Optional[str] = None
     singer_info: Optional[str] = None
-    singer_view: Optional[str] = 0
+    singer_view: Optional[int] = 0
 
 class SingerCreateSchema(BaseModel):
     singer_name: str

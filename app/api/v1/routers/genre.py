@@ -18,10 +18,11 @@ def get_all_genres():
     try:
         result = get_all()
         if not result.data:
-            raise HTTPException(status_code=404, detail= "User not found in Genres")
+            raise HTTPException(status_code=404, detail= "Genre not found in Genres")
 
         return result
-
+    except HTTPException:
+        raise
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))

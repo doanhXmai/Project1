@@ -36,6 +36,19 @@ def get_singer_by_id(singer_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get all info singer by id error: {e}")
+
+@router.get("/get-top-singers/{limit}")
+def get_top_singers(limit: int = 10):
+    try:
+        result = singer_crud.get_top_singer(limit)
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Singers not found")
+        return result.data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get top singers error: {e}")
+
 @router.post("/add-singer")
 def add_singer(request: SingerRequest, admin=Depends(get_current_admin)):
     try:

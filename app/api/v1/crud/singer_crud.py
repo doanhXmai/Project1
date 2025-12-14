@@ -23,6 +23,9 @@ def get_all_info_singer(singer_id):
         )"""
     ).eq("singer_id", singer_id).execute()
 
+def get_top_singer(limit: int = 10):
+    return supabase_py_service_client.table("Singers").select("*").order("singer_view", desc=True).limit(limit).execute()
+
 def create_singer(singer: SingerCreateSchema):
     return supabase_py_service_client.table("Singers").insert({
         "singer_name": singer.singer_name,

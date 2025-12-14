@@ -162,3 +162,17 @@ async def add_track(data: str = Form(...),
         "files": uploaded_urls
     }
 
+@router.get("/get-top-tracks/{limit}")
+def get_top_track(limit: int = 10):
+    try:
+        result = track_crud.get_top_tracks(limit)
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Tracks not found")
+
+        return result.data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get top track error: {e}")
