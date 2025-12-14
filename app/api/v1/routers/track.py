@@ -207,6 +207,22 @@ def get_top_track(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get top track error: {e}")
 
+@router.get("/get-track/{track_id}")
+def get_track_by_id(track_id: int):
+    try:
+        result = track_crud.get_track_detail_by_id(track_id)
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Track not found")
+        else:
+            data = flatten_detail_track(result.data)
+
+        return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get track by id = {track_id} error: {e}")
+
 @router.delete("/delete-track/{track_id}")
 def delete_track(track_id: int, admin=Depends(get_current_admin)):
     try:
