@@ -102,7 +102,14 @@ def id_to_singers(singer_names: List[str]):
     return list_id
 
 def flatten_detail_singer(data):
-    if "track_singer" in data:
-        singer_data["Tracks"] = [
-            item[""]
+    if "track_singers" in data[0]:
+        data[0]["Tracks"] = [
+            item["Tracks"]
+            for item in data[0]["track_singers"]
+            if item.get("Tracks")
         ]
+        del data[0]["track_singers"]
+
+        if "Tracks" in data[0]:
+            data[0]["tracks"] = data[0].pop("Tracks")
+    return data

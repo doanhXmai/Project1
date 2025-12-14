@@ -6,6 +6,7 @@ from app.core.config import Settings
 from app.schemas.singer_schema import SingerCreateSchema, SingerRequest, SingerUpdateRequest
 from app.services.admin_service import get_current_admin
 from app.services import singer_service
+from app.services.singer_service import flatten_detail_singer
 from app.utils import enum_utils
 from app.utils.log import ConsoleLogger as cl
 
@@ -31,7 +32,10 @@ def get_singer_by_id(singer_id: int):
         result = singer_crud.get_all_info_singer(singer_id)
         if not result.data:
             raise HTTPException(status_code=404, detail="Singer not found")
-        return result.data
+        else:
+            data = flatten_detail_singer(result.data)
+
+        return data
     except HTTPException:
         raise
     except Exception as e:
