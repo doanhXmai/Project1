@@ -54,5 +54,11 @@ def get_track_detail_by_id(track_id):
         """
     ).eq("track_id", track_id).single().execute()
 
+def update_view_track(track_id):
+    return supabase_py_service_client.rpc(
+        "increment_track_and_singer_view",
+        {"tid": track_id}
+    ).execute()
+
 def delete_track(track_id: int):
     return supabase_py_service_client.table("Tracks").delete().eq("track_id", track_id).execute()

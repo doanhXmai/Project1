@@ -220,3 +220,15 @@ def delete_track(track_id: int, admin=Depends(get_current_admin)):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Delete track with id - {track_id} error: {e}")
+
+@router.post("/{track_id}/view")
+async def increase_track_view(track_id: int):
+    try:
+        result = track_crud.update_view_track(track_id)
+
+        return {
+            "success": True,
+            "message": "View increased"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"update view error: {e}")
