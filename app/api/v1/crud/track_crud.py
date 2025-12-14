@@ -1,6 +1,5 @@
 from app.core.supabase import supabase_py_service_client
 
-
 def get_all():
     return (supabase_py_service_client.table("Tracks")
             .select("track_id,track_title,"

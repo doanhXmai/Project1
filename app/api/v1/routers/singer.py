@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 
+from app.api.v1.crud import singer_crud
 from app.api.v1.crud.singer_crud import get_all
 from app.core.config import Settings
 from app.schemas.singer_schema import SingerCreateSchema, SingerRequest, SingerUpdateRequest
@@ -24,6 +25,17 @@ def get_all_singers():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get-singer/{singer_id}")
+def get_singer_by_id(singer_id: int):
+    try:
+        result = singer_crud.get_all_info_singer(singer_id)
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Singer not found")
+        return result.data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get all info singer by id error: {e}")
 @router.post("/add-singer")
 def add_singer(request: SingerRequest, admin=Depends(get_current_admin)):
     try:

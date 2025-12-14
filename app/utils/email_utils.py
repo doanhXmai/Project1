@@ -32,6 +32,7 @@ settings = Settings()
 #         return False
 
 def send_otp_email(to_email: str, otp_code: str):
+    cl.info(f"Start sending OTP to {to_email}")
     try:
         response = requests.post(
             "https://api.resend.com/emails",
@@ -54,7 +55,9 @@ def send_otp_email(to_email: str, otp_code: str):
             },
             timeout=10,
         )
+        cl.info(f"Resend response: {response.status_code} - {response.text}")
         response.raise_for_status()
+        cl.info("OTP email sent successfully")
         return True
 
     except Exception as e:
