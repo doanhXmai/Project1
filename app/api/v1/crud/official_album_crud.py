@@ -40,6 +40,19 @@ def get_official_album_by_admin_id(admin_id: int):
             .eq("officialAlbum_uploader_admin_id", admin_id)
             .execute())
 
+def get_official_all_info_by_id(oa_id: int):
+    return supabase_py_service_client.table("OfficialAlbums").select(
+        f"""
+        {OFFICIAL_ALBUM_FIELDS},
+        singers: Singers(
+            singer_id, singer_name, singer_info
+        ),
+        tracks: Tracks(
+            track_id, track_title, track_duration, track_poster_url, track_audio_url, track_total_view
+        )
+        """
+    ).eq("officialAlbum_id", oa_id).single().execute()
+
 def create_official_album_by_admin_id(oa: OfficialAlbumSchema, admin_id: int):
     return supabase_py_service_client.table("OfficialAlbums").insert({
         "officialAlbum_singer_id": oa.officialAlbum_singer_id,

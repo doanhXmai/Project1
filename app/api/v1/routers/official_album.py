@@ -62,6 +62,19 @@ def get_by_admin(admin_id):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get official album by {admin_id} error: {e}")
 
+@router.get("/get-official-album/{official_album_id}")
+def get_all_info(official_album_id: int):
+    try:
+        result = official_album_crud.get_official_all_info_by_id(official_album_id)
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail=f"Official album - {official_album_id} not found")
+
+        return result.data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get official album by id - {official_album_id} error: {e}")
 
 @router.get("/get-by-name/{name}")
 def get_by_name(name):
@@ -71,10 +84,8 @@ def get_by_name(name):
         if not result.data:
             raise HTTPException(status_code=404, detail=f"Official album - {name} not found")
 
-        return {
-            "number": len(result.data),
-            "data": result.data
-        }
+        return result.data
+
     except HTTPException:
         raise
     except Exception as e:
@@ -88,10 +99,7 @@ def get_by_id(official_album_id):
         if not result.data:
             raise HTTPException(status_code=404, detail=f"Official album - {official_album_id} not found")
 
-        return {
-            "number": len(result.data),
-            "data": result.data
-        }
+        return result.data
     except HTTPException:
         raise
     except Exception as e:

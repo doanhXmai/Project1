@@ -17,8 +17,8 @@ def get_singer_by_name(singer_name: str):
 def get_all_info_singer(singer_id):
     return supabase_py_service_client.table("Singers").select(
         """*, 
-        OfficialAlbums(*),
-        Track_Singer (
+        official_albums: OfficialAlbums(*),
+        track_singers: Track_Singer (
             Tracks(track_id,track_title, track_info,track_duration, track_lyric_url, track_poster_url, track_banner_url,track_audio_url, track_officialAlbum_id,track_upload_date,track_total_view)
         )"""
     ).eq("singer_id", singer_id).execute()
