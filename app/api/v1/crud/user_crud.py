@@ -3,7 +3,8 @@ from uuid import UUID
 from pydantic import EmailStr
 
 from app.utils.log import ConsoleLogger as cl
-from app.core.supabase import supabase_py_service_client
+from app.core.supabase import supabase_py_service_client, settings
+
 
 def get_user_by_id(user_id: UUID):
     return supabase_py_service_client.table("Users").select("*").eq("user_id", user_id).execute()
@@ -16,6 +17,9 @@ def update_user_status_by_id(user_id: UUID, status: bool = False):
 
 def update_user_by_id(update_data, user_id: UUID):
     return supabase_py_service_client.table("Users").update(update_data).eq("user_id", user_id).execute()
+
+def update_user_update_date_by_id(user_id: UUID):
+    return supabase_py_service_client.table("Users").update({"user_update_date": settings.DATE_NOW.isoformat()})
 
 def get_user_by_email(user_email: EmailStr):
     return supabase_py_service_client.table("Users").select("*").eq("user_email", user_email).execute()

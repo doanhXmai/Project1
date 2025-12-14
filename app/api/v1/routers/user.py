@@ -59,6 +59,11 @@ async def update_user_info(display_name: str = Form(None),
         if not res.data:
             raise HTTPException(status_code=400, detail="Update failed")
 
+        res = user_crud.update_user_update_date_by_id(user_id)
+
+        if not res.data:
+            cl.warn("update user update date failed")
+
         return {"message": "Update successful"}
     except HTTPException:
         raise
