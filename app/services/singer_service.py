@@ -100,3 +100,9 @@ def id_to_singers(singer_names: List[str]):
     for name in singer_names:
         list_id.append(id_to_singer(name)["singer_id"])
     return list_id
+
+def flatten_detail_singer(data):
+    if "track_singer" in data:
+        singer_data["Tracks"] = [
+            item[""]
+        ]

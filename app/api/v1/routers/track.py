@@ -28,7 +28,7 @@ router = APIRouter(prefix = f"{settings.API_VERSION}/track", tags = ["Track"])
 @router.get("/get-all-tracks")
 def get_all_tracks():
     try:
-        all_tracks = supabase_py_service_client.table("Tracks").select("*").execute()
+        all_tracks = track_crud.get_all()
         if not all_tracks.data:
             return {"status": True, "message": "The Data is not available!"}
         return all_tracks.data
