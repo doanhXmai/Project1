@@ -20,7 +20,7 @@ def get_all_genres():
         if not result.data:
             raise HTTPException(status_code=404, detail= "Genre not found in Genres")
 
-        return result
+        return result.data
     except HTTPException:
         raise
     except Exception as e:
