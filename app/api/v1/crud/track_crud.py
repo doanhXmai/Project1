@@ -54,7 +54,5 @@ def get_track_detail_by_id(track_id):
         """
     ).eq("track_id", track_id).single().execute()
 
-# def create_track_by_admin():
-#     return supabase_py_service_client.table("Tracks").insert({
-#
-#     })
+def delete_track(track_id: int):
+    return supabase_py_service_client.table("Tracks").delete().eq("track_id", track_id).execute()

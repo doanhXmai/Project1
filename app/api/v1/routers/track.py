@@ -9,7 +9,7 @@ from typing import List, Optional
 from pydantic import ValidationError
 from sqlalchemy.testing.plugin.plugin_base import config
 
-from app.services.track_service import resolve_bucket_and_path, make_filename, flatten_detail_track
+from app.services.track_service import resolve_bucket_and_path, make_filename, flatten_detail_track, slugify_vietnamese
 from app.utils.log import ConsoleLogger as cl
 from app.core.config import Settings
 from app.core.supabase import supabase_py_service_client
@@ -92,7 +92,14 @@ async def add_track(data: str = Form(...),
     if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
         raise HTTPException(status_code=403, detail="No permission")
 
-    base_name = f"{track_in.track_title}_{'_'.join(track_singers)}".replace(" ", "_")
+    # base_name = f"{track_in.track_title}_{'_'.join(track_singers)}".replace(" ", "_")
+
+    safe_title = slugify_vietnamese(track_in.track_title)
+    # safe_singers = "_".join([slugify_vietnamese(s) for s in track_singers])
+
+    base_name = f"{safe_title}_{'_'.join(track_singers)}".replace(" ", "_")
+
+    cl.info(f"base name: {base_name}")
 
     duration_seconds, duration_time = await get_duration(track_audio)
 
@@ -192,3 +199,24 @@ def get_track_by_id(track_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get track by id = {track_id} error: {e}")
+
+@router.delete("/delete-track/{track_id}")
+def delete_track(track_id: int, admin=Depends(get_current_admin)):
+    try:
+        admin_role = admin["admin_role"]
+
+        if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
+            raise HTTPException(status_code=403, detail="No permission")
+
+        existing = track_crud.get_track_by_id(track_id)
+        if not existing.data:
+            raise HTTPException(status_code=404, detail=f"Track({track_id}) not found")
+
+        res = track_crud.delete_track(track_id)
+
+        return {"message": f"Delete track with {track_id} successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Delete track with id - {track_id} error: {e}")

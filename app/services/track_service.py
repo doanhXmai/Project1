@@ -1,4 +1,8 @@
+import re
+
 from fastapi import UploadFile
+
+import unicodedata
 
 from app.core.config import Settings
 
@@ -42,3 +46,19 @@ def flatten_detail_track(data):
         ]
 
     return data
+
+def slugify_vietnamese(text: str):
+    if not text:
+        return ""
+
+    text = unicodedata.normalize("NFD", text)
+
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+    text = text.lower()
+
+    text = re.sub(r"[^a-z0-9]+", '_', text)
+
+    text = text.strip('_')
+
+    return text

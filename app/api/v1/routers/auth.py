@@ -88,7 +88,8 @@ def refresh_access_token(request: RefreshTokenRequest):
 
 @router.post("/request-password-reset")
 def request_password_reset(
-        req: ForgotPasswordRequestByEmail
+        req: ForgotPasswordRequestByEmail,
+        background_tasks: BackgroundTasks
 ):
     try:
         email = req.email.lower()
@@ -106,13 +107,17 @@ def request_password_reset(
             passwordResets_expired_at=(datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
         ))
 
-        send = send_otp_email(to_email=email, otp_code=otp)
+        # send = send_otp_email(to_email=email, otp_code=otp)
 
         # background_tasks.add_task(
         #     send_otp_email,
         #     to_email = email,
         #     otp_code = otp
         # )
+
+        send = send_otp_email(to_email=email, otp_code=otp)
+        if not send:
+            raise HTTPException(status_code=500, detail="Send OTP failed")
 
         return {"status": True, "message": "OTP send successfully"}
     except HTTPException:

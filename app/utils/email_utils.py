@@ -55,9 +55,12 @@ def send_otp_email(to_email: str, otp_code: str):
             },
             timeout=10,
         )
-        cl.info(f"Resend response: {response.status_code} - {response.text}")
+        cl.info(f"[Resend] Status: {response.status_code}")
+        cl.info(f"[Resend] Body: {response.text}")
         response.raise_for_status()
         cl.info("OTP email sent successfully")
+        data = response.json()
+        cl.info(f"[Resend] Email ID: {data.get('id')}")
         return True
 
     except Exception as e:
