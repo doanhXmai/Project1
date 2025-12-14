@@ -9,7 +9,7 @@ from typing import List, Optional
 from pydantic import ValidationError
 from sqlalchemy.testing.plugin.plugin_base import config
 
-from app.services.track_service import resolve_bucket_and_path, make_filename
+from app.services.track_service import resolve_bucket_and_path, make_filename, flatten_detail_track
 from app.utils.log import ConsoleLogger as cl
 from app.core.config import Settings
 from app.core.supabase import supabase_py_service_client
@@ -50,13 +50,13 @@ def search_tracks(
         }
     ).execute()
 
-    return {
-        "query": q,
-        "page": page,
-        "page_size": page_size,
-        "number": len(result.data),
-        "data": result.data
-    }
+    cl.info(f"query: {q}")
+    cl.info(f"page: {page}")
+    cl.info(f"page_size: {page_size}")
+    cl.info(f"number: {len(result.data)}")
+
+    return result.data
+
 
 @router.get("/get-banners")
 def get_banners():
@@ -176,3 +176,19 @@ def get_top_track(limit: int = 10):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get top track error: {e}")
+
+@router.get("/get-track/{track_id}")
+def get_track_by_id(track_id: int):
+    try:
+        result = track_crud.get_track_detail_by_id(track_id)
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Track not found")
+        else:
+            data = flatten_detail_track(result.data)
+
+        return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get track by id = {track_id} error: {e}")

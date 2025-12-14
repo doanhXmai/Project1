@@ -28,6 +28,29 @@ def get_top_tracks(limit: int = 10):
             .execute()
     )
 
+def get_track_detail_by_id(track_id):
+    return supabase_py_service_client.table("Tracks").select(
+        """
+        track_id,track_title, track_info,track_duration, track_lyric_url,track_poster_url, track_banner_url,track_audio_url, track_upload_date,track_total_view, 
+        official_album: OfficialAlbums(
+            officialAlbum_id,
+            officialAlbum_name
+        ),
+        track_singer: Track_Singer(
+            singers: Singers (
+                singer_id,
+                singer_name
+            )
+        ),
+        track_genre: Track_Genre (
+            genres: Genres (
+                genre_id,
+                genre_name
+            )
+        )
+        """
+    ).eq("track_id", track_id).single().execute()
+
 # def create_track_by_admin():
 #     return supabase_py_service_client.table("Tracks").insert({
 #
