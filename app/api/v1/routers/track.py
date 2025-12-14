@@ -169,6 +169,29 @@ async def add_track(data: str = Form(...),
         "files": uploaded_urls
     }
 
+@router.patch("/update-track/{track_id}")
+async def update_track(track_id: int,
+                       data: str = Form(None),
+                       track_lyrics: UploadFile = File(None),
+                       track_poster: UploadFile = File(None),
+                       track_audio: UploadFile = File(None),
+                       track_banner: UploadFile = File(None),
+                       track_singers: List[str] = Form(None),
+                       track_genres: List[str] = Form(None),
+                       admin=Depends(get_current_admin)):
+    try:
+        track_in = TrackRequestCreateSchema.model_validate_json(data)
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON in 'data' field - {e}")
+
+    admin_id = admin["admin_id"]
+    admin_role = admin["admin_role"]
+
+    if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
+        raise HTTPException(status_code=403, detail="No permission")
+
+
+
 @router.get("/get-top-tracks/{limit}")
 def get_top_track(limit: int = 10):
     try:
@@ -183,22 +206,6 @@ def get_top_track(limit: int = 10):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Get top track error: {e}")
-
-@router.get("/get-track/{track_id}")
-def get_track_by_id(track_id: int):
-    try:
-        result = track_crud.get_track_detail_by_id(track_id)
-
-        if not result.data:
-            raise HTTPException(status_code=404, detail="Track not found")
-        else:
-            data = flatten_detail_track(result.data)
-
-        return data
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Get track by id = {track_id} error: {e}")
 
 @router.delete("/delete-track/{track_id}")
 def delete_track(track_id: int, admin=Depends(get_current_admin)):

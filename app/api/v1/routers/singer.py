@@ -22,7 +22,8 @@ def get_all_singers():
             raise HTTPException(status_code=404, detail="User not found in Singers")
 
         return result.data
-
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -97,3 +98,23 @@ def update_singer(request: SingerUpdateRequest, admin = Depends(get_current_admi
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/delete-singer/{singer_id}")
+def delete_singer(singer_id: int, admin=Depends(get_current_admin)):
+    try:
+        admin_role = admin["admin_role"]
+
+        if not enum_utils.check_super_admin(admin_role) and not enum_utils.check_content_manager(admin_role):
+            raise HTTPException(status_code=403, detail="No permission")
+
+        existing = singer_crud.get_singer_by_id(singer_id)
+        if not existing.data:
+            raise HTTPException(status_code=404, detail=f"Track({singer_id}) not found")
+
+        result = singer_crud.delete_singer(singer_id)
+
+        return {"message": f"Delete singer with {singer_id} successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"delete singer error: {e}")

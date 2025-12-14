@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Form, UploadFile, File
 
 from app.core.config import Settings
-from app.core.supabase import supabase_py_service_client
 from app.schemas.user_schema import UserResponseSchema
 from app.services.admin_service import get_current_admin
 from app.services.user_service import get_current_user

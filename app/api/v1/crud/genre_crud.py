@@ -1,4 +1,4 @@
-from app.core.supabase import supabase_py, supabase_py_service_client
+from app.core.supabase import supabase_py_service_client
 from app.schemas.genre_schema import GenreCreateSchema
 
 
@@ -12,7 +12,7 @@ def get_genre_by_name(name: str):
     return supabase_py_service_client.table("Genres").select("*").eq("genre_name", name).execute()
 
 def get_genre_by_id(genre_id: int):
-    return supabase_py.table("Genres").select("*").eq("genre_id", genre_id).execute()
+    return supabase_py_service_client.table("Genres").select("*").eq("genre_id", genre_id).execute()
 
 def create_genre(genre: GenreCreateSchema):
     return supabase_py_service_client.table("Genres").insert({

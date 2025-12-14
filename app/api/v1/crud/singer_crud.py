@@ -39,3 +39,6 @@ def update_singer(singer_id, singer: SingerCreateSchema):
         "singer_info": singer.singer_info,
         "singer_view": singer.singer_view
     }).eq("singer_id", singer_id).execute()
+
+def delete_singer(singer_id: int):
+    return supabase_py_service_client.table("Singers").delete().eq("singer_id", singer_id).execute()

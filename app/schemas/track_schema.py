@@ -13,6 +13,14 @@ class TrackRequestCreateSchema(BaseModel):
     track_officialAlbum_id: Optional[int] = None
     track_total_view: Optional[int] = 0
 
+class TrackRequestUpdateSchema(BaseModel):
+    track_title: Optional[str] = None
+    track_info: Optional[str] = None
+    track_duration: Optional[str] = None
+    track_lyric: Optional[str] = None
+    track_officialAlbum_id: Optional[int] = None
+    track_total_view: Optional[int] = 0
+
 class TrackCreateSchema(BaseModel):
     track_title                         : str
     track_info                          : Optional[str]         = None
