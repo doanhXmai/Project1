@@ -20,7 +20,7 @@ def get_all_singers():
         if not result.data:
             raise HTTPException(status_code=404, detail="User not found in Singers")
 
-        return result
+        return result.data
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
